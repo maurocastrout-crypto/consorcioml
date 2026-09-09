@@ -1960,13 +1960,14 @@ function renderArquivoMortoCaixinha(uid, arquivos) {
       </div>`;
     }).join('');
     return `<div style="background:#faf5ff;border:1px solid #ddd6fe;border-radius:10px;padding:10px 12px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="toggleArquivoMortoCiclo('${uid}',${numCiclo})">
-        <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="cursor:pointer;flex:1;" onclick="toggleArquivoMortoCiclo('${uid}',${numCiclo})">
           <span style="font-size:12px;font-weight:800;color:#5b21b6;">🔒 Ciclo #${numCiclo} · Encerrado em ${arq.encerradoEm ? fmtD(parseDateCaixinha(arq.encerradoEm)) : '—'}</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <span style="font-size:13px;font-weight:900;color:#7c3aed;">💰 ${fmt(arq.valorTotal || 0)}</span>
-          <span id="seta-ciclo-${uid}-${numCiclo}" style="font-size:11px;color:#7c3aed;">▶</span>
+          <button onclick="gerarComprovanteCicloCaixinha('${uid}',${numCiclo})" title="Imprimir comprovante deste ciclo" style="background:#7c3aed;color:#fff;border:none;border-radius:5px;padding:4px 9px;font-size:11px;cursor:pointer;">🖨️</button>
+          <span onclick="toggleArquivoMortoCiclo('${uid}',${numCiclo})" id="seta-ciclo-${uid}-${numCiclo}" style="cursor:pointer;padding:2px 4px;font-size:11px;color:#7c3aed;">▶</span>
         </div>
       </div>
       <div id="ciclo-${uid}-${numCiclo}" style="display:none;margin-top:8px;">
@@ -3658,7 +3659,9 @@ window.retirarTotalCaixinha = async function(uid) {
     if (arqCount) arqCount.textContent = arquivoNovo.length;
     const msg = document.getElementById('msg-caixinha-' + uid);
     if (msg) { msg.style.display = 'inline-block'; setTimeout(() => { msg.style.display = 'none'; }, 3000); }
-    alert('✅ Retirada total de ' + fmt(saldoTotal) + ' realizada com sucesso! O ciclo foi salvo no Arquivo Morto.');
+    // Abre automaticamente o comprovante deste ciclo recém-encerrado, pronto para imprimir
+    gerarComprovanteCicloCaixinha(uid, arquivoNovo.length);
+    alert('✅ Retirada total de ' + fmt(saldoTotal) + ' realizada com sucesso! O ciclo foi salvo no Arquivo Morto.\n\nO comprovante foi aberto em outra aba/janela para impressão.');
   } catch(e) { alert('Erro: ' + e.message); }
 };
 
@@ -3939,6 +3942,173 @@ window.gerarComprovante = async function(uid, aba) {
     const janela = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
     janela.document.write(html);
     janela.document.close();
+  } catch(e) { alert('Erro ao gerar comprovante: ' + e.message); }
+};
+
+// ══ COMPROVANTE — CICLO ENCERRADO DA CAIXINHA (ARQUIVO MORTO) ══
+// Gera o mesmo tipo de comprovante imprimível, mas para um ciclo já encerrado
+// (Retirar Valor Total), lendo os dados congelados em arquivoMortoCaixinha.
+window.gerarComprovanteCicloCaixinha = async function(uid, numCiclo) {
+  try {
+    const db2 = window._db; const doc = window._doc; const getDoc = window._getDoc;
+    const snap = await getDoc(doc(db2, 'clientes', uid));
+    const d = snap.data();
+    if (!d) { alert('Cliente não encontrado.'); return; }
+    const arquivos = d.arquivoMortoCaixinha || [];
+    const arq = arquivos[numCiclo - 1];
+    if (!arq) { alert('Ciclo não encontrado no Arquivo Morto.'); return; }
+
+    const fmtV = v => 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+    const hoje = new Date().toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    const nomeCliente = d.nome || '—';
+    const cpfCliente  = d.cpf  || '—';
+    const corTopo = '#7c3aed';
+    const movs = arq.historico || [];
+    if (!movs.length) { alert('Nenhuma movimentação registrada neste ciclo.'); return; }
+
+    // Ordena cronologicamente e recalcula saldo evento a evento
+    const evs = movs
+      .map(e => ({ ...e, dt: parseDateCaixinha(e.data) }))
+      .sort((a, b) => a.dt - b.dt);
+
+    let saldoRolante = 0;
+    const linhasHTML = evs.map((ev, i) => {
+      const isRet = ev.tipo === 'retirada';
+      if (isRet) saldoRolante = Math.max(0, saldoRolante - ev.valor);
+      else saldoRolante += ev.valor;
+      return `<tr style="border-bottom:1px solid #e2e8f0;">
+        <td style="padding:10px 12px;color:#5a8ab0;font-size:13px;">${i+1}</td>
+        <td style="padding:10px 12px;font-weight:600;">${ev.data}</td>
+        <td style="padding:10px 12px;">
+          <span style="background:${isRet?'#fee2e2':'#dcfce7'};color:${isRet?'#b91c1c':'#15803d'};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">
+            ${isRet ? '📤 Retirada' : '📥 Depósito'}
+          </span>
+        </td>
+        <td style="padding:10px 12px;font-weight:800;color:${isRet?'#b91c1c':'#15803d'};text-align:right;">${isRet?'−':'+'} ${fmtV(ev.valor)}</td>
+        <td style="padding:10px 12px;font-weight:700;color:#0a3d6b;text-align:right;">${fmtV(saldoRolante)}</td>
+      </tr>`;
+    }).join('');
+
+    const totalDepositado = movs.filter(m => m.tipo !== 'retirada').reduce((s,m)=>s+m.valor,0);
+    const totalRetiradoAntes = movs.slice(0,-1).filter(m => m.tipo === 'retirada').reduce((s,m)=>s+m.valor,0);
+    const totalHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:20px;">
+        <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:11px;color:#166534;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Total Depositado</div>
+          <div style="font-size:20px;font-weight:900;color:#15803d;">${fmtV(totalDepositado)}</div>
+        </div>
+        <div style="background:#fff5f5;border:1px solid #fca5a5;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:11px;color:#b91c1c;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Retiradas Parciais</div>
+          <div style="font-size:20px;font-weight:900;color:#b91c1c;">${fmtV(totalRetiradoAntes)}</div>
+        </div>
+        <div style="background:#faf5ff;border:2px solid #7c3aed;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:11px;color:#5b21b6;font-weight:700;text-transform:uppercase;margin-bottom:4px;">🔒 Retirada Total (Encerramento)</div>
+          <div style="font-size:20px;font-weight:900;color:#5b21b6;">${fmtV(arq.valorTotal||0)}</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;padding:10px 14px;background:#faf5ff;border:1px dashed #7c3aed;border-radius:8px;font-size:12px;color:#5b21b6;">
+        🔒 Este ciclo foi <strong>encerrado</strong> em <strong>${fmtD(parseDateCaixinha(arq.encerradoEm))}</strong> através de "Retirar Valor Total". Registro arquivado — não pode ser alterado.
+      </div>`;
+
+    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Comprovante — Ciclo Encerrado — ${nomeCliente}</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Lato',sans-serif;background:#f4f6f9;color:#2d3748;padding:24px;}
+  .card{max-width:820px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,0.10);}
+  .topo{background:${corTopo};padding:28px 32px;color:#fff;}
+  .logo-row{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+  .logo-box{width:44px;height:44px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-weight:900;font-size:16px;border:2px solid rgba(255,255,255,0.5);}
+  .logo-txt{font-family:'Montserrat',sans-serif;font-weight:900;font-size:18px;letter-spacing:0.5px;}
+  .logo-sub{font-size:11px;opacity:0.8;letter-spacing:2px;text-transform:uppercase;}
+  .titulo{font-family:'Montserrat',sans-serif;font-size:22px;font-weight:900;margin-bottom:4px;}
+  .subtitulo{font-size:13px;opacity:0.85;}
+  .dados-cliente{padding:20px 32px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:flex;gap:40px;flex-wrap:wrap;}
+  .dado{display:flex;flex-direction:column;gap:2px;}
+  .dado-label{font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:1px;}
+  .dado-val{font-size:15px;font-weight:700;color:#0a3d6b;}
+  .corpo{padding:24px 32px;}
+  table{width:100%;border-collapse:collapse;margin-bottom:4px;}
+  thead tr{background:#f8fafc;border-bottom:2px solid #e2e8f0;}
+  tbody tr:hover{background:#f8fafc;}
+  .rodape{padding:16px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#94a3b8;}
+  @media print{
+    body{background:#fff;padding:0;}
+    .no-print{display:none!important;}
+    .card{box-shadow:none;border-radius:0;}
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="topo">
+    <div class="logo-row">
+      <div class="logo-box">#</div>
+      <div>
+        <div class="logo-txt">NOSSA CAIXINHA</div>
+        <div class="logo-sub">Melgaço · Pará</div>
+      </div>
+    </div>
+    <div class="titulo">💰 Extrato — Caixinha (Ciclo Encerrado #${numCiclo})</div>
+    <div class="subtitulo">Emitido em ${hoje}</div>
+  </div>
+
+  <div class="dados-cliente">
+    <div class="dado"><span class="dado-label">Cliente</span><span class="dado-val">${nomeCliente}</span></div>
+    <div class="dado"><span class="dado-label">CPF</span><span class="dado-val">${cpfCliente}</span></div>
+    ${d.telefone ? `<div class="dado"><span class="dado-label">Telefone</span><span class="dado-val">${d.telefone}</span></div>` : ''}
+    ${d.cidade   ? `<div class="dado"><span class="dado-label">Cidade</span><span class="dado-val">${d.cidade}</span></div>` : ''}
+  </div>
+
+  <div class="corpo">
+    <table>
+      <thead>
+        <tr>
+          <th style="padding:10px 12px;text-align:left;color:#5a8ab0;font-size:12px;font-weight:700;text-transform:uppercase;width:40px;">#</th>
+          <th style="padding:10px 12px;text-align:left;color:#5a8ab0;font-size:12px;font-weight:700;text-transform:uppercase;">Data</th>
+          <th style="padding:10px 12px;text-align:left;color:#5a8ab0;font-size:12px;font-weight:700;text-transform:uppercase;">Tipo</th>
+          <th style="padding:10px 12px;text-align:right;color:#5a8ab0;font-size:12px;font-weight:700;text-transform:uppercase;">Valor</th>
+          <th style="padding:10px 12px;text-align:right;color:#5a8ab0;font-size:12px;font-weight:700;text-transform:uppercase;">Saldo</th>
+        </tr>
+      </thead>
+      <tbody>${linhasHTML}</tbody>
+    </table>
+    ${totalHTML}
+  </div>
+
+  <div style="padding:28px 32px 8px;display:grid;grid-template-columns:1fr 1fr;gap:40px;">
+    <div style="text-align:center;">
+      <div style="border-top:2px solid #0a3d6b;padding-top:8px;margin-top:40px;"></div>
+      <div style="font-size:13px;font-weight:800;color:#0a3d6b;font-family:'Montserrat',sans-serif;">Maurileno de Lima Laurinho</div>
+      <div style="font-size:11px;color:#5a8ab0;margin-top:2px;">Operador / Credor</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="border-top:2px solid #0a3d6b;padding-top:8px;margin-top:40px;"></div>
+      <div style="font-size:13px;font-weight:800;color:#0a3d6b;font-family:'Montserrat',sans-serif;">${titleCase(nomeCliente)}</div>
+      <div style="font-size:11px;color:#5a8ab0;margin-top:2px;">Assinatura do Cliente</div>
+    </div>
+  </div>
+
+  <div class="rodape">
+    <span>ML Consórcio — Melgaço, Pará</span>
+    <div class="no-print" style="display:flex;gap:10px;">
+      <button onclick="window.print()" style="background:#7c3aed;color:#fff;padding:8px 20px;border-radius:6px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;border:none;cursor:pointer;">🖨️ Imprimir / Salvar PDF</button>
+      <button onclick="window.close()" style="background:#e2e8f0;color:#5a8ab0;padding:8px 16px;border-radius:6px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;border:none;cursor:pointer;">✕ Fechar</button>
+    </div>
+    <span>Doc. gerado automaticamente</span>
+  </div>
+</div>
+</body></html>`;
+
+    const janela = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
+    janela.document.write(html);
+    janela.document.close();
+    return janela;
   } catch(e) { alert('Erro ao gerar comprovante: ' + e.message); }
 };
 
