@@ -1,0 +1,2245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ML Consórcio | Acesso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue-950:#04102199;
+    --deep-950:#040b18;
+    --blue-900:#0a2647;
+    --blue-800:#123c73;
+    --blue-700:#164a86;
+    --blue-600:#1a5ba8;
+    --blue-500:#2f7fd6;
+    --sky-400:#4fc3f7;
+    --sky-300:#8ddcfb;
+    --ice-200:#dcf1ff;
+    --ink-50:#f4f9ff;
+    --ink-200:#c3d6ec;
+    --ink-400:#7f9bc2;
+    --danger:#ef6a6a;
+    --radius-lg:22px;
+    --radius-md:14px;
+    font-size:16px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:'Inter',sans-serif;
+    color:var(--ink-50);
+    background:var(--deep-950);
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+  ::selection{ background:var(--sky-400); color:var(--deep-950); }
+
+  /* ---------- Animated backdrop ---------- */
+  .scene{
+    position:fixed; inset:0;
+    background:
+      radial-gradient(120% 90% at 15% -10%, #1b5fa8 0%, transparent 55%),
+      radial-gradient(110% 85% at 100% 10%, #123c73 0%, transparent 52%),
+      radial-gradient(90% 70% at 50% 115%, #0d2f5c 0%, transparent 60%),
+      linear-gradient(165deg, #04122a 0%, #0a2647 48%, #071a38 100%);
+    z-index:0;
+  }
+  .grid-overlay{
+    position:fixed; inset:0; z-index:1; opacity:.22;
+    background-image:
+      linear-gradient(rgba(180,220,255,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(180,220,255,.05) 1px, transparent 1px);
+    background-size:46px 46px;
+    -webkit-mask-image:radial-gradient(85% 70% at 50% 30%, black 10%, transparent 75%);
+            mask-image:radial-gradient(85% 70% at 50% 30%, black 10%, transparent 75%);
+  }
+  .blob{ position:fixed; z-index:1; border-radius:50%; filter:blur(80px); opacity:.5; will-change:transform; }
+  .blob.b1{ width:560px; height:560px; top:-180px; left:-160px;
+    background:radial-gradient(circle at 30% 30%, var(--sky-400), transparent 70%);
+    animation: drift1 24s ease-in-out infinite; opacity:.35; }
+  .blob.b2{ width:480px; height:480px; bottom:-200px; right:-140px;
+    background:radial-gradient(circle at 60% 40%, var(--blue-500), transparent 70%);
+    animation: drift2 28s ease-in-out infinite; opacity:.45; }
+  .blob.b3{ width:420px; height:420px; top:40%; left:50%;
+    background:radial-gradient(circle at 50% 50%, var(--sky-300), transparent 70%);
+    animation: drift3 32s ease-in-out infinite; opacity:.22;}
+  @keyframes drift1{ 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(60px,50px) scale(1.12);} }
+  @keyframes drift2{ 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(-50px,-40px) scale(1.08);} }
+  @keyframes drift3{ 0%,100%{transform:translate(-50%,-50%) scale(1);} 50%{transform:translate(-46%,-54%) scale(1.15);} }
+
+  /* ---------- Financial line-chart motif (decorative, background) ---------- */
+  .chart-motif{ position:fixed; z-index:1; bottom:0; left:0; width:100%; height:46vh; opacity:.35; pointer-events:none; }
+  .chart-motif path.line{
+    fill:none; stroke:url(#lineGrad); stroke-width:2.4; stroke-linecap:round;
+    stroke-dasharray:1400; stroke-dashoffset:1400;
+    animation: drawline 4.2s cubic-bezier(.4,.7,.2,1) forwards;
+    filter:drop-shadow(0 0 4px rgba(79,195,247,.35));
+  }
+  .chart-motif path.area{ opacity:.16; animation: fadein 2.5s ease 1.2s forwards; opacity:0; }
+  @keyframes drawline{ to{ stroke-dashoffset:0; } }
+  @keyframes fadein{ to{ opacity:.16; } }
+  .chart-motif .dot{
+    fill:var(--sky-300); opacity:.8;
+  }
+
+  .coin{
+    position:fixed; z-index:1; pointer-events:none; user-select:none; opacity:.32;
+    animation: floaty 13s ease-in-out infinite;
+  }
+  @keyframes floaty{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(-14px);} }
+
+  @media (prefers-reduced-motion: reduce){
+    .blob, .coin, .chart-motif path{ animation:none !important; }
+  }
+
+  /* ---------- Layout ---------- */
+  .wrap{
+    position:relative; z-index:2;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px 20px;
+  }
+  @keyframes rise{ from{opacity:0; transform:translateY(18px);} to{opacity:1; transform:translateY(0);} }
+
+  .brand{ display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:30px; }
+  .brand .mark{
+    width:46px; height:46px; border-radius:13px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Sora',sans-serif; font-weight:800; font-size:18px;
+    color:var(--deep-950);
+    background:linear-gradient(135deg, var(--sky-300), var(--sky-400));
+    box-shadow:0 8px 24px rgba(79,195,247,.35);
+  }
+  .brand .wordmark{ font-family:'Sora',sans-serif; font-weight:700; font-size:20px; letter-spacing:.2px; }
+  .brand .wordmark b{ color:var(--sky-300); font-weight:700; }
+
+  /* ---------- Auth card ---------- */
+  .auth-card{
+    position:relative;
+    width:100%; max-width:420px;
+    background:rgba(15,28,54,.55);
+    border:1px solid rgba(255,255,255,.14);
+    backdrop-filter:blur(22px);
+    -webkit-backdrop-filter:blur(22px);
+    border-radius:var(--radius-lg);
+    padding:38px 34px 30px;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06);
+    animation: rise .8s .12s ease both;
+  }
+  .auth-card::before{
+    content:""; position:absolute; inset:0; border-radius:var(--radius-lg); padding:1px;
+    background:linear-gradient(135deg, rgba(140,210,255,.55), transparent 30%, transparent 70%, rgba(47,127,214,.5));
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none;
+  }
+  .auth-card h2{ font-family:'Sora',sans-serif; font-size:23px; font-weight:700; margin-bottom:6px; }
+  .auth-card .sub{ color:var(--ink-400); font-size:14px; margin-bottom:26px; }
+
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:12.5px; color:var(--ink-200); margin-bottom:7px; letter-spacing:.02em; }
+  .input-shell{
+    display:flex; align-items:center; gap:10px;
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:var(--radius-md);
+    padding:0 14px; transition:border-color .18s, box-shadow .18s, background .18s;
+  }
+  .input-shell:focus-within{
+    border-color:var(--sky-400);
+    box-shadow:0 0 0 4px rgba(79,195,247,.16);
+    background:rgba(255,255,255,.07);
+  }
+  .input-shell svg{ flex:none; opacity:.6; }
+  .input-shell input{
+    flex:1; background:transparent; border:0; outline:0;
+    color:var(--ink-50); font-family:'Inter',sans-serif; font-size:15px;
+    padding:13px 2px; min-width:0;
+  }
+  .input-shell input::placeholder{ color:var(--ink-400); }
+  .toggle-eye{ background:none; border:0; cursor:pointer; opacity:.6; padding:6px; color:var(--ink-50); }
+  .toggle-eye:hover{ opacity:1; }
+
+  .row-between{ display:flex; align-items:center; justify-content:space-between; margin:4px 0 22px; }
+  .remember{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink-200); }
+  .remember input{ accent-color:var(--sky-400); width:15px; height:15px; }
+  .forgot{ font-size:13px; color:var(--sky-300); text-decoration:none; }
+  .forgot:hover{ text-decoration:underline; }
+
+  .btn-primary{
+    width:100%; border:0; cursor:pointer; padding:15px 18px; border-radius:var(--radius-md);
+    font-family:'Sora',sans-serif; font-weight:700; font-size:15px; letter-spacing:.01em;
+    color:#fff;
+    background:linear-gradient(135deg, var(--sky-400), var(--blue-600));
+    box-shadow:0 12px 28px -8px rgba(47,127,214,.55);
+    position:relative; overflow:hidden;
+    transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
+  }
+  .btn-primary::after{
+    content:""; position:absolute; top:0; left:-60%; width:40%; height:100%;
+    background:linear-gradient(115deg, transparent, rgba(255,255,255,.3), transparent);
+    transform:skewX(-20deg); transition:left .5s ease;
+  }
+  .btn-primary:hover::after{ left:130%; }
+  .btn-primary:hover{ transform:translateY(-2px); box-shadow:0 16px 34px -8px rgba(47,127,214,.65); filter:brightness(1.05); }
+  .btn-primary:active{ transform:translateY(0); }
+  .btn-primary .spinner{ display:none; width:16px; height:16px; border-radius:50%; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; animation:spin .7s linear infinite; vertical-align:-3px; margin-right:8px; }
+  .btn-primary.loading .spinner{ display:inline-block; }
+  .btn-primary.loading .btn-text{ opacity:.85; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .error-msg{
+    display:none; align-items:center; gap:8px;
+    background:rgba(239,106,106,.1); border:1px solid rgba(239,106,106,.35);
+    color:#ffb3b3; font-size:13px; padding:11px 14px; border-radius:12px; margin-bottom:16px;
+  }
+  .error-msg.show{ display:flex; }
+
+  .shake{ animation:shake .38s; }
+  @keyframes shake{ 20%,60%{transform:translateX(-7px);} 40%,80%{transform:translateX(7px);} 100%{transform:translateX(0);} }
+
+  .demo-hint{
+    margin-top:22px; padding-top:18px; border-top:1px dashed rgba(255,255,255,.14);
+    font-size:12.5px; color:var(--ink-400); line-height:1.7;
+  }
+  .demo-hint b{ color:var(--ink-200); }
+  .demo-hint .tag{
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:11.5px;
+    background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12);
+    padding:2px 7px; border-radius:6px; color:var(--sky-300); margin:0 2px;
+  }
+
+  .proto-badge{
+    position:fixed; bottom:16px; left:50%; transform:translateX(-50%); z-index:5;
+    font-size:11.5px; color:var(--ink-400); background:rgba(4,16,33,.6);
+    border:1px solid rgba(255,255,255,.1); padding:7px 14px; border-radius:999px;
+    backdrop-filter:blur(8px); letter-spacing:.02em;
+  }
+  .proto-badge b{ color:var(--sky-300); }
+
+  /* ==================== APP SHELL (client & admin) ==================== */
+  #app-shell{ display:none; position:relative; z-index:2; min-height:100vh; }
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 26px; border-bottom:1px solid rgba(255,255,255,.1);
+    background:rgba(9,20,40,.65); backdrop-filter:blur(16px);
+    position:sticky; top:0; z-index:20;
+  }
+  .topbar .tb-left{ display:flex; align-items:center; gap:14px; }
+  .topbar .tb-brand{ display:flex; align-items:center; gap:9px; }
+  .topbar .tb-brand .mark{ width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-family:'Sora',sans-serif; font-weight:800; font-size:13px; color:var(--deep-950); background:linear-gradient(135deg, var(--sky-300), var(--sky-400)); }
+  .topbar .tb-brand span{ font-family:'Sora',sans-serif; font-weight:700; font-size:15px; display:none; }
+  .hamburger{ display:none; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); border-radius:9px; width:36px; height:36px; color:var(--ink-50); cursor:pointer; align-items:center; justify-content:center; }
+  .topbar .who{ display:flex; align-items:center; gap:10px; }
+  .avatar{
+    width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:'Sora',sans-serif; font-weight:700; font-size:13px; color:var(--deep-950);
+    background:linear-gradient(135deg, var(--sky-300), var(--sky-400)); flex:none;
+  }
+  .who .name{ font-family:'Sora',sans-serif; font-weight:600; font-size:14px; line-height:1.2; }
+  .who .role{ font-size:11.5px; color:var(--ink-400); }
+  .who-text{ display:none; }
+  @media (min-width:620px){ .who-text{ display:block; } .topbar .tb-brand span{ display:block; } }
+  .logout-btn{
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); color:var(--ink-50);
+    padding:8px 14px; border-radius:10px; font-size:13px; cursor:pointer; font-family:'Inter',sans-serif;
+    display:flex; align-items:center; gap:6px;
+  }
+  .logout-btn:hover{ background:rgba(255,255,255,.12); }
+
+  .app-body{ display:flex; align-items:flex-start; }
+  .sidebar{
+    width:236px; flex:none; min-height:calc(100vh - 61px);
+    background:rgba(7,17,35,.55); border-right:1px solid rgba(255,255,255,.08);
+    backdrop-filter:blur(14px); padding:18px 12px; position:sticky; top:61px;
+  }
+  .side-label{ font-size:10.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-400); padding:10px 12px 6px; }
+  .nav-item{
+    display:flex; align-items:center; gap:11px; width:100%; text-align:left;
+    background:none; border:0; color:var(--ink-200); font-family:'Inter',sans-serif; font-size:14px;
+    padding:11px 12px; border-radius:11px; cursor:pointer; margin-bottom:3px; transition:background .15s, color .15s;
+  }
+  .nav-item svg{ flex:none; opacity:.75; }
+  .nav-item:hover{ background:rgba(255,255,255,.05); color:var(--ink-50); }
+  .nav-item.active{ background:linear-gradient(135deg, rgba(79,195,247,.18), rgba(47,127,214,.1)); color:#fff; box-shadow:inset 0 0 0 1px rgba(79,195,247,.28); }
+  .nav-item.active svg{ opacity:1; }
+  .nav-badge{ margin-left:auto; background:var(--sky-400); color:var(--deep-950); font-size:10.5px; font-weight:700; padding:1px 7px; border-radius:999px; }
+
+  .content{ flex:1; min-width:0; padding:26px 28px 60px; }
+  .content-header{ display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:22px; }
+  .content-header h1{ font-family:'Sora',sans-serif; font-size:22px; font-weight:700; }
+  .content-header p{ color:var(--ink-400); font-size:13.5px; margin-top:3px; }
+
+  .btn-sm{
+    border:0; cursor:pointer; padding:10px 16px; border-radius:10px; font-family:'Sora',sans-serif;
+    font-weight:600; font-size:13px; color:#fff; background:linear-gradient(135deg, var(--sky-400), var(--blue-600));
+    box-shadow:0 8px 18px -6px rgba(47,127,214,.5); display:inline-flex; align-items:center; gap:7px;
+  }
+  .btn-sm:hover{ filter:brightness(1.06); }
+  .btn-ghost{
+    border:1px solid rgba(255,255,255,.16); cursor:pointer; padding:9px 14px; border-radius:10px;
+    font-family:'Inter',sans-serif; font-weight:500; font-size:12.5px; color:var(--ink-200); background:rgba(255,255,255,.04);
+  }
+  .btn-ghost:hover{ background:rgba(255,255,255,.09); color:#fff; }
+  .btn-danger-ghost{ border:1px solid rgba(239,106,106,.35); color:#ffb3b3; background:rgba(239,106,106,.08); }
+  .btn-danger-ghost:hover{ background:rgba(239,106,106,.16); }
+  .btn-danger{ border:1px solid rgba(239,106,106,.45); color:#fff; background:#e05a5a; }
+  .btn-danger:hover{ filter:brightness(1.08); }
+
+  .kpi-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin-bottom:26px; }
+  .kpi-card{
+    background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.1); border-radius:16px;
+    padding:18px 20px; position:relative; overflow:hidden;
+  }
+  .kpi-card .kicon{ width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:rgba(79,195,247,.14); color:var(--sky-300); margin-bottom:12px; }
+  .kpi-card .kval{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:22px; color:#fff; }
+  .kpi-card .klabel{ font-size:12px; color:var(--ink-400); margin-top:4px; }
+
+  .glass-card{
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); border-radius:18px;
+    padding:22px 22px; margin-bottom:20px;
+  }
+  .glass-card h3{ font-family:'Sora',sans-serif; font-size:15.5px; font-weight:700; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .glass-card h3 .link-btn{ font-size:12px; color:var(--sky-300); font-weight:500; cursor:pointer; background:none; border:0; font-family:'Inter',sans-serif; }
+
+  .tabs-row{ display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .tab-btn{
+    border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.03); color:var(--ink-300);
+    padding:8px 15px; border-radius:999px; font-size:12.5px; cursor:pointer; font-family:'Inter',sans-serif; font-weight:500;
+    display:flex; align-items:center; gap:6px;
+  }
+  .tab-btn.active{ background:linear-gradient(135deg, rgba(79,195,247,.22), rgba(47,127,214,.14)); color:#fff; border-color:rgba(79,195,247,.4); }
+  .tab-btn .count{ background:rgba(255,255,255,.14); padding:0 6px; border-radius:999px; font-size:10.5px; }
+
+  table.data-table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  table.data-table thead th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-400);
+    padding:0 12px 10px; border-bottom:1px solid rgba(255,255,255,.1); font-weight:600;
+  }
+  table.data-table tbody td{ padding:13px 12px; border-bottom:1px solid rgba(255,255,255,.06); vertical-align:middle; }
+  table.data-table tbody tr:hover{ background:rgba(255,255,255,.03); }
+  table.data-table .mono{ font-family:'IBM Plex Mono',monospace; }
+  .empty-row td{ text-align:center; color:var(--ink-400); padding:34px 12px; font-size:13px; }
+
+  .badge{ display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:999px; font-size:11.5px; font-weight:600; }
+  .badge.b-pendente{ background:rgba(255,193,90,.14); color:#ffd48a; border:1px solid rgba(255,193,90,.3); }
+  .badge.b-ativo{ background:rgba(79,224,166,.14); color:#7fe0bd; border:1px solid rgba(79,224,166,.3); }
+  .badge.b-recusado, .badge.b-recusada{ background:rgba(239,106,106,.14); color:#ffb3b3; border:1px solid rgba(239,106,106,.3); }
+  .badge.b-pago{ background:rgba(79,195,247,.14); color:var(--sky-300); border:1px solid rgba(79,195,247,.3); }
+  .badge.b-aporte{ background:rgba(79,195,247,.13); color:var(--sky-300); }
+  .badge.b-rendimento{ background:rgba(140,220,190,.13); color:#a6e8cf; }
+  .badge.b-resgate{ background:rgba(255,255,255,.09); color:var(--ink-200); }
+  .badge.b-transferencia{ background:rgba(140,120,255,.14); color:#c3b8ff; }
+  .badge.b-ajuste{ background:rgba(255,193,90,.13); color:#ffd48a; }
+
+  /* Passbook-style extrato */
+  .passbook{ border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,.1); }
+  .passbook-row{
+    display:grid; grid-template-columns:96px 1fr auto auto; gap:14px; align-items:center;
+    padding:14px 18px; border-bottom:1px dashed rgba(255,255,255,.09); font-size:13.5px;
+  }
+  .passbook-row:last-child{ border-bottom:0; }
+  .passbook-row:nth-child(odd){ background:rgba(255,255,255,.02); }
+  .passbook-row .pdate{ color:var(--ink-400); font-family:'IBM Plex Mono',monospace; font-size:12px; }
+  .passbook-row .pval{ font-family:'IBM Plex Mono',monospace; font-weight:600; text-align:right; }
+  .passbook-row .pval.pos{ color:#7fe0bd; }
+  .passbook-row .pval.neg{ color:#ff9c9c; }
+  .passbook-row .psaldo{ font-family:'IBM Plex Mono',monospace; color:var(--ink-400); font-size:12px; text-align:right; min-width:92px; }
+  @media (max-width:640px){
+    .passbook-row{ grid-template-columns:1fr; gap:4px; }
+    .passbook-row .psaldo{ text-align:left; }
+    .passbook-row .pval{ text-align:left; }
+  }
+
+  .sparkline{ width:100%; height:74px; }
+
+  .info-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:16px; }
+  .info-item .il{ font-size:11.5px; color:var(--ink-400); text-transform:uppercase; letter-spacing:.05em; margin-bottom:5px; }
+  .info-item .iv{ font-family:'Sora',sans-serif; font-weight:600; font-size:15.5px; }
+  .info-item .iv.mono{ font-family:'IBM Plex Mono',monospace; }
+
+  /* Contract document */
+  .contract-doc{ font-size:13.5px; line-height:1.65; color:var(--ink-200); }
+  .contract-doc-head{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:14px;
+    padding-bottom:16px; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,.12);
+  }
+  .contract-doc-head strong{ font-family:'Sora',sans-serif; font-size:16px; color:#fff; }
+  .contract-doc-head span{ font-size:12.5px; color:var(--ink-400); }
+  .contract-num{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--sky-300); background:rgba(79,195,247,.1); border:1px solid rgba(79,195,247,.25); padding:5px 10px; border-radius:8px; white-space:nowrap; }
+  .contract-doc p{ margin-bottom:6px; }
+  .cdoc-section-title{
+    font-family:'Sora',sans-serif; font-weight:700; font-size:12px; letter-spacing:.06em; color:var(--sky-300);
+    text-transform:uppercase; margin:20px 0 8px;
+  }
+  .cdoc-legalnote{
+    margin-top:18px; padding:12px 14px; border-radius:10px;
+    background:rgba(255,193,90,.08); border:1px solid rgba(255,193,90,.25);
+    font-size:12px; color:#e8c890; line-height:1.6;
+  }
+  .contract-clauses{ padding-left:20px; margin:16px 0; }
+  .contract-clauses li{ margin-bottom:10px; }
+  .sign-box{
+    margin-top:22px; padding-top:20px; border-top:1px dashed rgba(255,255,255,.16);
+  }
+  .sign-box h4{ font-family:'Sora',sans-serif; font-size:14.5px; margin-bottom:6px; }
+  .sign-lines{ display:flex; gap:36px; flex-wrap:wrap; margin:18px 0 14px; }
+  .sign-line{ flex:1; min-width:220px; }
+  .sign-line .line{ border-bottom:1px solid rgba(255,255,255,.35); height:38px; }
+  .sign-line .sign-label{ font-size:12px; color:var(--ink-400); margin-top:7px; }
+  .sign-date{ font-size:12.5px; color:var(--ink-400); }
+  .signed-tag{
+    margin-top:20px; display:inline-flex; align-items:center; gap:8px;
+    background:rgba(79,224,166,.1); border:1px solid rgba(79,224,166,.3); color:#a6e8cf;
+    padding:10px 14px; border-radius:12px; font-size:13px;
+  }
+  @media print{
+    .scene, .grid-overlay, .blob, .chart-motif, .topbar, .sidebar, .sidebar-backdrop, .hamburger, .content-header button, .toast-wrap{ display:none !important; }
+    body{ background:#fff !important; color:#111 !important; }
+    .content{ padding:0 !important; }
+    .glass-card{ background:#fff !important; border-color:#ddd !important; color:#111; }
+    .contract-doc{ color:#111; }
+    .contract-doc-head strong{ color:#111; }
+    .sign-line .line{ border-color:#333 !important; }
+    .sign-line .sign-label, .sign-date{ color:#333 !important; }
+    .cdoc-section-title{ color:#0a2647 !important; }
+    .cdoc-legalnote{ background:#fdf3e0 !important; border-color:#e0c98a !important; color:#5a4a20 !important; }
+  }
+
+  /* Dossiê completo (impressão de todos os documentos de adesão) */
+  #dossiePrintArea{ display:none; }
+  body.printing-dossie .content,
+  body.printing-dossie .modal-overlay{ display:none !important; }
+  body.printing-dossie #dossiePrintArea{ display:block; padding:24px; max-width:900px; margin:0 auto; }
+  .dossie-page{ margin-bottom:0; }
+  @media print{
+    body.printing-dossie #dossiePrintArea{ display:block !important; padding:0; }
+    .dossie-page{ page-break-after: always; border:none !important; box-shadow:none !important; }
+    .dossie-page:last-child{ page-break-after: auto; }
+  }
+
+  .empty-state{ text-align:center; padding:50px 20px; color:var(--ink-400); }
+  .empty-state svg{ opacity:.35; margin-bottom:14px; }
+  .empty-state h4{ color:var(--ink-200); font-family:'Sora',sans-serif; font-size:15px; margin-bottom:6px; }
+  .empty-state p{ font-size:13px; max-width:320px; margin:0 auto; }
+
+  /* Modal */
+  .modal-overlay{
+    display:none; position:fixed; inset:0; z-index:100; background:rgba(3,10,22,.72);
+    backdrop-filter:blur(6px); align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-overlay.show{ display:flex; }
+  .modal-box{
+    width:100%; max-width:440px; background:#0c1f3c; border:1px solid rgba(255,255,255,.14);
+    border-radius:20px; padding:26px 26px 22px; box-shadow:0 40px 90px -20px rgba(0,0,0,.6);
+    animation: rise .28s ease both; max-height:88vh; overflow-y:auto;
+  }
+  .modal-box h3{ font-family:'Sora',sans-serif; font-size:18px; margin-bottom:4px; }
+  .modal-box .msub{ font-size:12.5px; color:var(--ink-400); margin-bottom:18px; }
+  .modal-box .field{ margin-bottom:14px; }
+  .modal-box label{ display:block; font-size:12px; color:var(--ink-200); margin-bottom:6px; }
+  .modal-box select, .modal-box input[type=text], .modal-box input[type=number], .modal-box input[type=password], .modal-box input[type=email]{
+    width:100%; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.14); border-radius:10px;
+    padding:11px 12px; color:var(--ink-50); font-family:'Inter',sans-serif; font-size:14px; outline:0;
+  }
+  .modal-box select:focus, .modal-box input:focus{ border-color:var(--sky-400); box-shadow:0 0 0 3px rgba(79,195,247,.15); }
+  .modal-box .row2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .modal-actions{ display:flex; gap:10px; margin-top:20px; }
+  .modal-actions button{ flex:1; }
+  .modal-close{ position:absolute; top:16px; right:16px; background:rgba(255,255,255,.07); border:0; color:var(--ink-50); width:28px; height:28px; border-radius:8px; cursor:pointer; }
+  .modal-box{ position:relative; }
+  .modal-note{ font-size:11.5px; color:var(--ink-400); margin-top:10px; line-height:1.5; }
+
+  /* Toast */
+  .toast-wrap{ position:fixed; top:18px; right:18px; z-index:200; display:flex; flex-direction:column; gap:8px; }
+  .toast{
+    background:rgba(12,28,54,.92); border:1px solid rgba(79,195,247,.35); color:#fff; padding:12px 16px;
+    border-radius:12px; font-size:13px; display:flex; align-items:center; gap:9px; box-shadow:0 12px 30px -8px rgba(0,0,0,.5);
+    animation: toastin .25s ease both;
+  }
+  .toast.err{ border-color:rgba(239,106,106,.4); }
+  @keyframes toastin{ from{opacity:0; transform:translateX(20px);} to{opacity:1; transform:translateX(0);} }
+
+  /* Botão flutuante do WhatsApp */
+  .wa-fab{
+    position:fixed; right:22px; bottom:22px; z-index:150;
+    width:58px; height:58px; border-radius:50%;
+    background:#25D366; color:#04331c;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 12px 30px -6px rgba(37,211,102,.55);
+    text-decoration:none; transition:transform .15s ease;
+  }
+  .wa-fab:hover{ transform:scale(1.07); }
+  @media (max-width:900px){ .wa-fab{ right:16px; bottom:16px; width:52px; height:52px; } }
+
+  /* Botão de WhatsApp inline (linhas de tabela) */
+  .btn-whats{
+    border:1px solid rgba(37,211,102,.4); color:#8ef0b6; background:rgba(37,211,102,.1);
+  }
+  .btn-whats:hover{ background:rgba(37,211,102,.2); color:#fff; }
+  .btn-whats.disabled{ opacity:.35; pointer-events:none; }
+
+  /* Comprovante / recibo pronto para envio */
+  .recibo-preview{
+    white-space:pre-wrap; font-family:'IBM Plex Mono',monospace; font-size:12.5px; line-height:1.65;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); border-radius:12px;
+    padding:14px 16px; margin:2px 0 16px; color:var(--ink-200);
+  }
+  .btn-whats-solid{
+    width:100%; justify-content:center; display:inline-flex; align-items:center; gap:8px;
+    background:#25D366 !important; color:#04331c !important;
+    box-shadow:0 10px 24px -6px rgba(37,211,102,.55) !important;
+  }
+  .btn-whats-solid:hover{ filter:brightness(1.06); }
+
+  /* Mobile sidebar */
+  @media (max-width:900px){
+    .hamburger{ display:flex; }
+    .sidebar{
+      position:fixed; left:0; top:61px; bottom:0; z-index:30; transform:translateX(-100%);
+      transition:transform .22s ease; box-shadow:20px 0 40px rgba(0,0,0,.3);
+    }
+    .sidebar.open{ transform:translateX(0); }
+    .sidebar-backdrop{ display:none; position:fixed; inset:61px 0 0 0; background:rgba(0,0,0,.4); z-index:25; }
+    .sidebar-backdrop.show{ display:block; }
+    .content{ padding:20px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="scene"></div>
+  <div class="grid-overlay"></div>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <svg class="chart-motif" viewBox="0 0 1200 400" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#2f7fd6"/>
+        <stop offset="55%" stop-color="#4fc3f7"/>
+        <stop offset="100%" stop-color="#8ddcfb"/>
+      </linearGradient>
+      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#4fc3f7" stop-opacity="0.5"/>
+        <stop offset="100%" stop-color="#4fc3f7" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path class="area" d="M0,320 C120,300 180,340 260,300 C340,260 380,220 460,230 C540,240 580,180 660,170 C740,160 800,120 880,110 C960,100 1040,70 1200,60 L1200,400 L0,400 Z" fill="url(#areaGrad)"/>
+    <path class="line" d="M0,320 C120,300 180,340 260,300 C340,260 380,220 460,230 C540,240 580,180 660,170 C740,160 800,120 880,110 C960,100 1040,70 1200,60"/>
+    <circle class="dot" cx="1200" cy="60" r="4"/>
+  </svg>
+
+  <svg class="coin" style="top:16%; left:9%; width:34px; height:34px;" viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="9.5" stroke="#8ddcfb" stroke-width="1.3"/>
+    <path d="M12 7v10M9.5 9.2c0-1 1-1.7 2.5-1.7s2.5.7 2.5 1.7c0 2.2-5 1.4-5 3.6 0 1 1 1.7 2.5 1.7s2.5-.7 2.5-1.7" stroke="#8ddcfb" stroke-width="1.1" stroke-linecap="round"/>
+  </svg>
+  <svg class="coin" style="top:68%; left:6%; width:50px; height:50px; animation-delay:2s;" viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="9.5" stroke="#4fc3f7" stroke-width="1.1"/>
+    <path d="M12 7v10M9.5 9.2c0-1 1-1.7 2.5-1.7s2.5.7 2.5 1.7c0 2.2-5 1.4-5 3.6 0 1 1 1.7 2.5 1.7s2.5-.7 2.5-1.7" stroke="#4fc3f7" stroke-width="1" stroke-linecap="round"/>
+  </svg>
+  <svg class="coin" style="top:22%; right:10%; width:40px; height:40px; animation-delay:1s;" viewBox="0 0 24 24" fill="none">
+    <path d="M3 17l5-5 4 3 6-7M18 8h3v3" stroke="#8ddcfb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <svg class="coin" style="top:60%; right:14%; width:30px; height:30px; animation-delay:3s;" viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="9.5" stroke="#c3e9ff" stroke-width="1.2"/>
+    <path d="M12 7v10M9.5 9.2c0-1 1-1.7 2.5-1.7s2.5.7 2.5 1.7c0 2.2-5 1.4-5 3.6 0 1 1 1.7 2.5 1.7s2.5-.7 2.5-1.7" stroke="#c3e9ff" stroke-width="1.1" stroke-linecap="round"/>
+  </svg>
+
+  <!-- ===================== LOGIN SCREEN ===================== -->
+  <div id="login-screen">
+    <div class="wrap">
+
+      <section class="auth-card">
+        <div class="brand">
+          <div class="mark">ML</div>
+          <div class="wordmark">ML <b>Consórcio</b></div>
+        </div>
+
+        <h2>Acessar minha conta</h2>
+        <div class="sub">Entre com seu e-mail ou CPF cadastrado.</div>
+
+        <div class="error-msg" id="errorMsg">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span id="errorText">Dados inválidos. Confira e tente novamente.</span>
+        </div>
+
+        <form id="loginForm" autocomplete="off">
+          <div class="field">
+            <label for="identifier">E-mail ou CPF</label>
+            <div class="input-shell">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <input type="text" id="identifier" placeholder="voce@email.com ou 000.000.000-00" maxlength="254" oninput="maskIdentifier(this)" required>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="senha">Senha</label>
+            <div class="input-shell">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 11V8a6 6 0 1112 0v3M5 11h14v9a2 2 0 01-2 2H7a2 2 0 01-2-2v-9z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <input type="password" id="senha" placeholder="Sua senha" required>
+              <button type="button" class="toggle-eye" id="toggleEye" aria-label="Mostrar senha">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="row-between">
+            <label class="remember"><input type="checkbox"> Manter conectado</label>
+            <a class="forgot" href="#" onclick="return false;">Esqueci minha senha</a>
+          </div>
+
+          <button type="submit" class="btn-primary" id="submitBtn">
+            <span class="spinner"></span><span class="btn-text">Entrar</span>
+          </button>
+        </form>
+
+        <div class="demo-hint">
+          <b>Sistema conectado ao Firebase</b> — os dados agora são reais e compartilhados entre dispositivos.<br>
+          Use o e-mail (ou CPF) e a senha da sua conta cadastrada. O primeiro acesso do administrador é criado direto no Firebase Console.
+        </div>
+      </section>
+
+    </div>
+    <div class="proto-badge">☁️ Conectado ao Firebase — dados reais, sincronizados entre dispositivos</div>
+  </div>
+
+  <!-- ===================== APP SHELL (área do cliente / admin) ===================== -->
+  <div id="app-shell">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <div class="tb-brand"><div class="mark">ML</div><span>ML Consórcio</span></div>
+      </div>
+      <div class="who">
+        <div class="who-text" style="text-align:right;">
+          <div class="name" id="whoName">—</div>
+          <div class="role" id="whoRole">—</div>
+        </div>
+        <div class="avatar" id="avatarInitials">--</div>
+        <button class="logout-btn" id="logoutBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="who-text">Sair</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="app-body">
+      <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+      <nav class="sidebar" id="sidebar"></nav>
+      <main class="content" id="content"></main>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box" id="modalBox"></div>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <a id="waFab" class="wa-fab" href="#" target="_blank" rel="noopener" title="Falar no WhatsApp" style="display:none;">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.9 4.44-9.9 9.9 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.87 9.87 0 004.79 1.22h.01c5.46 0 9.9-4.44 9.9-9.9 0-2.64-1.03-5.12-2.9-6.99A9.82 9.82 0 0012.05 2zm5.8 14.11c-.24.68-1.4 1.32-1.93 1.4-.5.08-1.12.11-1.8-.11-.42-.13-.96-.31-1.65-.61-2.9-1.25-4.8-4.17-4.94-4.36-.14-.19-1.18-1.57-1.18-3 0-1.42.75-2.12 1.02-2.41.26-.29.58-.36.77-.36h.55c.18 0 .42-.07.65.5.24.58.81 2 .88 2.14.07.14.12.31.02.5-.1.19-.15.31-.29.48-.14.17-.3.37-.43.5-.14.14-.29.29-.12.57.17.29.76 1.25 1.63 2.02 1.12 1 2.06 1.31 2.35 1.46.29.14.46.12.63-.07.17-.19.72-.84.91-1.13.19-.29.38-.24.63-.14.26.1 1.66.78 1.94.92.29.14.48.22.55.34.07.13.07.7-.17 1.38z"/></svg>
+  </a>
+
+<script type="module">
+import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, deleteField,
+  collection, onSnapshot, arrayUnion
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+// ====== CONFIGURAÇÃO DO FIREBASE ======
+const firebaseConfig = {
+  apiKey: "AIzaSyCCq7nDo61gzMTIRbW09EP17iUpWlB1TIE",
+  authDomain: "mlconsorcioempresa.firebaseapp.com",
+  projectId: "mlconsorcioempresa",
+  storageBucket: "mlconsorcioempresa.firebasestorage.app",
+  messagingSenderId: "58572989968",
+  appId: "1:58572989968:web:3a5403507e2f7d53780c95"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const fsdb = getFirestore(fbApp);
+
+(function(){
+  "use strict";
+
+  function onlyDigits(s){ return (s||"").replace(/\D/g,""); }
+
+  // ---------- Máscaras de campo (CPF, CNPJ, telefone/celular, data) ----------
+  // Cada função formata o valor conforme o usuário digita e impede caracteres inválidos.
+  function maskCpf(el){
+    var d = onlyDigits(el.value).slice(0,11);
+    var v = d;
+    if(d.length > 9) v = d.slice(0,3)+"."+d.slice(3,6)+"."+d.slice(6,9)+"-"+d.slice(9);
+    else if(d.length > 6) v = d.slice(0,3)+"."+d.slice(3,6)+"."+d.slice(6);
+    else if(d.length > 3) v = d.slice(0,3)+"."+d.slice(3);
+    el.value = v;
+  }
+  function maskCnpj(el){
+    var d = onlyDigits(el.value).slice(0,14);
+    var v = d;
+    if(d.length > 12) v = d.slice(0,2)+"."+d.slice(2,5)+"."+d.slice(5,8)+"/"+d.slice(8,12)+"-"+d.slice(12);
+    else if(d.length > 8) v = d.slice(0,2)+"."+d.slice(2,5)+"."+d.slice(5,8)+"/"+d.slice(8);
+    else if(d.length > 5) v = d.slice(0,2)+"."+d.slice(2,5)+"."+d.slice(5);
+    else if(d.length > 2) v = d.slice(0,2)+"."+d.slice(2);
+    el.value = v;
+  }
+  function maskTelefone(el){
+    var d = onlyDigits(el.value).slice(0,11);
+    var v = d;
+    if(d.length > 10) v = "("+d.slice(0,2)+") "+d.slice(2,7)+"-"+d.slice(7); // celular (00) 00000-0000
+    else if(d.length > 6) v = "("+d.slice(0,2)+") "+d.slice(2,6)+"-"+d.slice(6); // fixo (00) 0000-0000
+    else if(d.length > 2) v = "("+d.slice(0,2)+") "+d.slice(2);
+    else if(d.length > 0) v = "("+d;
+    el.value = v;
+  }
+  // Formata um telefone já salvo (apenas dígitos) para exibição em campos e tabelas.
+  function formatTelefone(raw){
+    var d = onlyDigits(raw).slice(0,11);
+    if(!d) return "";
+    if(d.length > 10) return "("+d.slice(0,2)+") "+d.slice(2,7)+"-"+d.slice(7);
+    if(d.length > 6) return "("+d.slice(0,2)+") "+d.slice(2,6)+"-"+d.slice(6);
+    if(d.length > 2) return "("+d.slice(0,2)+") "+d.slice(2);
+    return d;
+  }
+  function maskData(el){
+    var d = onlyDigits(el.value).slice(0,8);
+    var v = d;
+    if(d.length > 4) v = d.slice(0,2)+"/"+d.slice(2,4)+"/"+d.slice(4);
+    else if(d.length > 2) v = d.slice(0,2)+"/"+d.slice(2);
+    el.value = v;
+  }
+  function maskMatricula(el){
+    var d = onlyDigits(el.value).slice(0,6);
+    var v = d;
+    if(d.length > 5) v = d.slice(0,5)+"-"+d.slice(5);
+    el.value = v;
+  }
+  // Login: aceita e-mail OU CPF. Só aplica máscara de CPF se o usuário não estiver digitando um e-mail.
+  function maskIdentifier(el){
+    if(el.value.indexOf("@") !== -1) return; // parece e-mail, não mexe
+    var digits = onlyDigits(el.value);
+    if(digits.length === 0 && el.value.replace(/[0-9.\-\s]/g,"").length > 0) return; // tem letras, deve ser e-mail
+    maskCpf(el);
+  }
+  // Converte DD/MM/AAAA -> AAAA-MM-DD (formato interno usado no restante do sistema)
+  function brDateToIso(br){
+    br = (br||"").trim();
+    var p = br.split("/");
+    if(p.length !== 3) return "";
+    var dd = p[0], mm = p[1], yyyy = p[2];
+    if(dd.length !== 2 || mm.length !== 2 || yyyy.length !== 4) return "";
+    return yyyy+"-"+mm+"-"+dd;
+  }
+  // Converte AAAA-MM-DD -> DD/MM/AAAA (para preencher o campo com o valor atual)
+  function isoDateToBr(iso){
+    var p = (iso||"").split("-");
+    return p.length === 3 ? (p[2]+"/"+p[1]+"/"+p[0]) : "";
+  }
+  // Primeiro dia do próximo mês (competência seguinte de folha), em ISO.
+  function proximaCompetenciaISO(){
+    var d = new Date();
+    var next = new Date(d.getFullYear(), d.getMonth()+1, 1);
+    return next.toISOString().slice(0,10);
+  }
+  // Soma N meses a uma data ISO (AAAA-MM-DD), retornando ISO.
+  function addMesesISO(iso, meses){
+    var p = (iso||"").split("-");
+    if(p.length !== 3) return null;
+    var d = new Date(parseInt(p[0],10), parseInt(p[1],10)-1, parseInt(p[2],10));
+    d.setMonth(d.getMonth() + meses);
+    return d.toISOString().slice(0,10);
+  }
+
+  // In-memory mirror kept in sync with Firestore via onSnapshot listeners below.
+  // All the render functions in this file read from this object exactly like before.
+  var db = { empresa:{}, convenios:[], users:[] };
+
+  function seedEmpresaFallback(){
+    return {
+      razaoSocial:"Preencher razão social", cnpj:"Preencher CNPJ", endereco:"Preencher endereço",
+      representante:"Preencher representante legal", cpfRepresentante:"Preencher CPF", cargoRepresentante:"Sócio-administrador",
+      whatsappAdmin:""
+    };
+  }
+
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---------- Password show/hide ----------
+  var senhaInput = document.getElementById("senha");
+  document.getElementById("toggleEye").addEventListener("click", function(){
+    senhaInput.type = senhaInput.type === "password" ? "text" : "password";
+  });
+
+  // ---------- Login logic (Firebase Authentication) ----------
+  var form = document.getElementById("loginForm");
+  var errorMsg = document.getElementById("errorMsg");
+  var errorText = document.getElementById("errorText");
+  var submitBtn = document.getElementById("submitBtn");
+  var authCard = document.querySelector(".auth-card");
+
+  function showError(msg){
+    errorText.textContent = msg;
+    errorMsg.classList.add("show");
+    authCard.classList.remove("shake");
+    void authCard.offsetWidth;
+    authCard.classList.add("shake");
+  }
+
+  var AUTH_ERROR_MESSAGES = {
+    "auth/invalid-credential": "E-mail/CPF ou senha incorretos.",
+    "auth/invalid-email": "E-mail/CPF ou senha incorretos.",
+    "auth/user-not-found": "E-mail/CPF ou senha incorretos.",
+    "auth/wrong-password": "E-mail/CPF ou senha incorretos.",
+    "auth/too-many-requests": "Muitas tentativas. Aguarde um instante e tente novamente.",
+    "auth/network-request-failed": "Falha de conexão. Verifique sua internet e tente novamente."
+  };
+
+  form.addEventListener("submit", async function(ev){
+    ev.preventDefault();
+    errorMsg.classList.remove("show");
+
+    var idRaw = document.getElementById("identifier").value.trim();
+    var senha = senhaInput.value;
+
+    if(!idRaw || !senha){
+      showError("Preencha e-mail (ou CPF) e senha.");
+      return;
+    }
+
+    submitBtn.classList.add("loading");
+    submitBtn.disabled = true;
+
+    try{
+      var idDigits = onlyDigits(idRaw);
+      var isCpfLike = idDigits.length >= 11 && idRaw.indexOf("@") === -1;
+      var email = idRaw;
+
+      if(isCpfLike){
+        var lookupSnap = await getDoc(doc(fsdb, "cpfLookup", idDigits));
+        if(!lookupSnap.exists()){ throw { code: "auth/user-not-found" }; }
+        email = lookupSnap.data().email;
+      }
+
+      await signInWithEmailAndPassword(auth, email, senha);
+      // onAuthStateChanged (abaixo) cuida de carregar o perfil e entrar no app.
+    }catch(err){
+      submitBtn.classList.remove("loading");
+      submitBtn.disabled = false;
+      var msg = AUTH_ERROR_MESSAGES[err && err.code] || "Não foi possível entrar. Tente novamente.";
+      showError(msg);
+    }
+  });
+
+  // ==================================================================
+  // APPLICATION (área do cliente / área do admin)
+  // ==================================================================
+  var currentUser = null;
+  var currentView = null;
+
+  async function fsSaveUser(id, data){
+    await setDoc(doc(fsdb, "users", id), data, { merge: true });
+  }
+  async function fsSaveConvenio(id, data){
+    await setDoc(doc(fsdb, "convenios", id), data, { merge: true });
+  }
+  function fmtMoney(v){ return (Number(v)||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"}); }
+  function fmtPct(v){ return ((Number(v)||0)*100).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}) + "%"; }
+  function fmtDate(d){ if(!d) return "—"; var p=d.split("-"); return p.length===3 ? (p[2]+"/"+p[1]+"/"+p[0]) : d; }
+
+  // ---------- Classificação de lançamentos do extrato ----------
+  function extratoBadgeClass(tipo){
+    if(tipo === "Aporte") return "b-aporte";
+    if(tipo === "Rendimento") return "b-rendimento";
+    if(tipo === "Transferência") return "b-transferencia";
+    if(tipo === "Ajuste") return "b-ajuste";
+    return "b-resgate";
+  }
+  function extratoIsSaida(e){
+    if(e && e.direcao) return e.direcao === "saida";
+    return e && e.tipo === "Resgate";
+  }
+  function todayISO(){ var d=new Date(); return d.toISOString().slice(0,10); }
+  function uid(prefix){ return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+  function esc(s){ var d=document.createElement("div"); d.textContent = s==null?"":s; return d.innerHTML; }
+  function convenioNome(id){ var c = db.convenios.find(function(x){return x.id===id;}); return c ? c.nome : "—"; }
+  function getUser(id){ return db.users.find(function(u){ return u.id === id; }); }
+
+  // ---------- Links diretos de WhatsApp ----------
+  // Monta um link wa.me a partir de um telefone brasileiro (com ou sem DDI 55) e uma mensagem opcional.
+  function waLink(phoneRaw, msg){
+    var d = onlyDigits(phoneRaw||"");
+    if(!d) return null;
+    if(d.length <= 11) d = "55" + d; // assume Brasil quando não vier com DDI
+    var url = "https://wa.me/" + d;
+    if(msg) url += "?text=" + encodeURIComponent(msg);
+    return url;
+  }
+  function updateWaFab(){
+    var fab = document.getElementById("waFab");
+    if(!fab) return;
+    if(!currentUser || currentUser.role !== "cliente"){ fab.style.display = "none"; return; }
+    var numero = db.empresa && db.empresa.whatsappAdmin;
+    var link = waLink(numero, "Olá! Sou "+currentUser.nome+", cliente da ML Consórcio, e gostaria de falar sobre minha conta.");
+    if(!link){ fab.style.display = "none"; return; }
+    fab.href = link;
+    fab.style.display = "flex";
+  }
+
+  // ---------- Comprovantes prontos para envio por WhatsApp ----------
+  // Toda ação da área financeira (aporte, resgate, transferência, ajuste, ativação
+  // de adesão) chama abrirModalRecibo() para já deixar a mensagem pronta pro cliente.
+  function montarTextoRecibo(u, titulo, linhas){
+    var empresaNome = (db.empresa && db.empresa.razaoSocial) || "ML Consórcio";
+    var partes = ["*"+empresaNome+"*", titulo, ""];
+    partes.push("Servidor(a): " + u.nome);
+    linhas.forEach(function(l){ partes.push(l); });
+    partes.push("");
+    partes.push("Data: " + fmtDate(todayISO()));
+    return partes.join("\n");
+  }
+
+  function abrirModalRecibo(userId, titulo, linhas){
+    var u = getUser(userId);
+    if(!u) return;
+    var texto = montarTextoRecibo(u, titulo, linhas);
+    var link = waLink(u.telefone, texto);
+    openModal(
+      '<button class="modal-close" onclick="closeModal()">'+icon("x")+'</button>' +
+      '<h3>'+esc(titulo)+'</h3><div class="msub">Comprovante pronto para '+esc(u.nome)+'</div>' +
+      '<div class="recibo-preview">'+esc(texto)+'</div>' +
+      (link ?
+        '<a class="btn-sm btn-whats-solid" href="'+link+'" target="_blank" rel="noopener">'+icon("whats")+' Enviar pelo WhatsApp</a>'
+        : '<div class="modal-note" style="color:#ffb3b3;">Este servidor não tem telefone/WhatsApp cadastrado. <button type="button" class="btn-ghost" style="margin-top:8px; display:block;" onclick="closeModal(); openModalEditarServidor(\''+userId+'\')">'+icon("gear")+' Cadastrar telefone</button></div>'
+      ) +
+      '<div class="modal-actions"><button type="button" class="btn-ghost" style="flex:1;" onclick="closeModal()">Fechar</button></div>'
+    );
+  }
+
+  function icon(name){
+    var icons = {
+      home:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      book:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 4h11a3 3 0 013 3v13H7a3 3 0 01-3-3V4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M4 4v13a3 3 0 003 3" stroke="currentColor" stroke-width="1.8"/></svg>',
+      doc:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M7 3h7l5 5v13H7V3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3v5h5M10 13h5M10 17h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+      building:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 21V6l8-3 8 3v15M4 21h16M9 9h1M9 13h1M14 9h1M14 13h1M10 21v-5h4v5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      users:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M17 20v-1a4 4 0 00-4-4H7a4 4 0 00-4 4v1M9 11a4 4 0 100-8 4 4 0 000 8zM23 20v-1a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      wallet:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 012-2h13a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" stroke="currentColor" stroke-width="1.7"/><path d="M16 12h3M3 9h18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+      chart:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M11 20V4M18 20v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+      whats:'<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.9 4.44-9.9 9.9 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.87 9.87 0 004.79 1.22h.01c5.46 0 9.9-4.44 9.9-9.9 0-2.64-1.03-5.12-2.9-6.99A9.82 9.82 0 0012.05 2zm5.8 14.11c-.24.68-1.4 1.32-1.93 1.4-.5.08-1.12.11-1.8-.11-.42-.13-.96-.31-1.65-.61-2.9-1.25-4.8-4.17-4.94-4.36-.14-.19-1.18-1.57-1.18-3 0-1.42.75-2.12 1.02-2.41.26-.29.58-.36.77-.36h.55c.18 0 .42-.07.65.5.24.58.81 2 .88 2.14.07.14.12.31.02.5-.1.19-.15.31-.29.48-.14.17-.3.37-.43.5-.14.14-.29.29-.12.57.17.29.76 1.25 1.63 2.02 1.12 1 2.06 1.31 2.35 1.46.29.14.46.12.63-.07.17-.19.72-.84.91-1.13.19-.29.38-.24.63-.14.26.1 1.66.78 1.94.92.29.14.48.22.55.34.07.13.07.7-.17 1.38z"/></svg>',
+      plus:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+      check:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      x:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+      eye:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg>',
+      bolt:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+      empty:'<svg width="46" height="46" viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 012-2h13a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" stroke="currentColor" stroke-width="1.4"/><path d="M16 12h3M3 9h18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+      gear:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.7"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 005 15a1.65 1.65 0 00-1.51-1H3.4a2 2 0 110-4H3.5A1.65 1.65 0 005 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09A1.65 1.65 0 0019.4 15z" stroke="currentColor" stroke-width="1.3"/></svg>'
+    };
+    return icons[name] || "";
+  }
+
+  // ---------- Toasts ----------
+  function toast(msg, type){
+    var wrap = document.getElementById("toastWrap");
+    var t = document.createElement("div");
+    t.className = "toast" + (type === "err" ? " err" : "");
+    t.innerHTML = (type === "err" ? icon("x") : icon("check")) + "<span>" + esc(msg) + "</span>";
+    wrap.appendChild(t);
+    setTimeout(function(){ t.style.opacity = "0"; t.style.transition = "opacity .3s"; setTimeout(function(){ t.remove(); }, 300); }, 2600);
+  }
+
+  // ---------- Modal ----------
+  function openModal(html){
+    document.getElementById("modalBox").innerHTML = html;
+    document.getElementById("modalOverlay").classList.add("show");
+  }
+  function closeModal(){ document.getElementById("modalOverlay").classList.remove("show"); }
+  document.getElementById("modalOverlay").addEventListener("click", function(e){ if(e.target === this) closeModal(); });
+  window.closeModal = closeModal;
+
+  // ---------- Sparkline ----------
+  function sparkline(points){
+    if(points.length < 2){
+      return '<svg class="sparkline" viewBox="0 0 300 74" preserveAspectRatio="none"></svg>';
+    }
+    var min = Math.min.apply(null, points), max = Math.max.apply(null, points);
+    if(min === max){ min -= 1; max += 1; }
+    var w = 300, h = 74, pad = 6;
+    var stepX = (w) / (points.length - 1);
+    var coords = points.map(function(v, i){
+      var x = i * stepX;
+      var y = h - pad - ((v - min) / (max - min)) * (h - pad*2);
+      return [x, y];
+    });
+    var linePath = "M" + coords.map(function(c){ return c[0].toFixed(1) + "," + c[1].toFixed(1); }).join(" L");
+    var areaPath = linePath + " L" + w + "," + h + " L0," + h + " Z";
+    return '<svg class="sparkline" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none">' +
+      '<defs><linearGradient id="sgrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4fc3f7" stop-opacity="0.45"/><stop offset="100%" stop-color="#4fc3f7" stop-opacity="0"/></linearGradient></defs>' +
+      '<path d="'+areaPath+'" fill="url(#sgrad)"/>' +
+      '<path d="'+linePath+'" fill="none" stroke="#4fc3f7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<circle cx="'+coords[coords.length-1][0]+'" cy="'+coords[coords.length-1][1]+'" r="3.6" fill="#8ddcfb"/>' +
+      '</svg>';
+  }
+
+  // ---------- Sidebar / navigation ----------
+  var NAV = {
+    cliente: [
+      { id:"home", label:"Início", ic:"home" },
+      { id:"extrato", label:"Extrato", ic:"book" },
+      { id:"contrato", label:"Meu Contrato", ic:"doc" }
+    ],
+    admin: [
+      { id:"overview", label:"Visão Geral", ic:"chart" },
+      { id:"convenios", label:"Convênios", ic:"building" },
+      { id:"servidores", label:"Servidores", ic:"users" },
+      { id:"resgates", label:"Resgates", ic:"wallet" },
+      { id:"empresa", label:"Dados da Empresa", ic:"gear" }
+    ]
+  };
+
+  function pendingCount(){
+    return db.users.filter(function(u){ return u.role==="cliente" && u.status==="pendente"; }).length;
+  }
+  function resgatesPendentesCount(){
+    var n = 0;
+    db.users.forEach(function(u){ (u.resgates||[]).forEach(function(r){ if(r.status==="pendente") n++; }); });
+    return n;
+  }
+
+  function renderSidebar(){
+    var items = NAV[currentUser.role];
+    var html = items.map(function(it){
+      var badge = "";
+      if(currentUser.role==="admin" && it.id==="servidores" && pendingCount()>0) badge = '<span class="nav-badge">'+pendingCount()+'</span>';
+      if(currentUser.role==="admin" && it.id==="resgates" && resgatesPendentesCount()>0) badge = '<span class="nav-badge">'+resgatesPendentesCount()+'</span>';
+      return '<button class="nav-item'+(currentView===it.id?' active':'')+'" onclick="setView(\''+it.id+'\')">'+icon(it.ic)+'<span>'+it.label+'</span>'+badge+'</button>';
+    }).join("");
+    document.getElementById("sidebar").innerHTML =
+      '<div class="side-label">'+(currentUser.role==="admin" ? "Administração" : "Minha conta")+'</div>' + html;
+  }
+
+  window.setView = function(view){
+    currentView = view;
+    renderSidebar();
+    renderContent();
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("sidebarBackdrop").classList.remove("show");
+    window.scrollTo({top:0, behavior:"smooth"});
+  };
+
+  function renderContent(){
+    var el = document.getElementById("content");
+    if(currentUser.role === "cliente"){
+      if(currentView === "home") el.innerHTML = viewClientHome();
+      else if(currentView === "extrato") el.innerHTML = viewClientExtrato();
+      else if(currentView === "contrato") el.innerHTML = viewClientContrato();
+    } else {
+      if(currentView === "overview") el.innerHTML = viewAdminOverview();
+      else if(currentView === "convenios") el.innerHTML = viewAdminConvenios();
+      else if(currentView === "servidores") el.innerHTML = viewAdminServidores();
+      else if(currentView === "resgates") el.innerHTML = viewAdminResgates();
+      else if(currentView === "empresa") el.innerHTML = viewAdminEmpresa();
+    }
+  }
+
+  // =========================== CLIENTE ===========================
+  function viewClientHome(){
+    var u = currentUser;
+    if(u.status === "aguardando_assinatura"){
+      return '<div class="content-header"><div><h1>Início</h1><p>Seu contrato está pronto</p></div></div>' +
+        '<div class="glass-card"><div class="empty-state">' + icon("doc") +
+        '<h4>Contrato pronto para assinatura</h4>' +
+        '<p>A ML Consórcio aprovou sua adesão e gerou o contrato com os valores e o prazo de desconto. Imprima, assine de próprio punho e entregue à ML Consórcio para ativar seu plano.</p>' +
+        '<button class="btn-sm" style="margin-top:14px;" onclick="setView(\'contrato\')">'+icon("doc")+' Ver e imprimir contrato</button>' +
+        '</div></div>';
+    }
+    if(u.status !== "ativo"){
+      return '<div class="content-header"><div><h1>Início</h1><p>Acompanhe o status da sua adesão</p></div></div>' +
+        '<div class="glass-card"><div class="empty-state">' + icon("empty") +
+        '<h4>Sua adesão está em análise</h4>' +
+        '<p>A ML Consórcio está analisando seus documentos e seu limite de desconto em folha. Assim que sua adesão for aprovada, seu contrato será gerado para assinatura.</p>' +
+        '</div></div>';
+    }
+    var totalAportado = u.extrato.filter(function(e){return e.tipo==="Aporte";}).reduce(function(a,e){return a+e.valor;},0);
+    var totalRendimento = u.extrato.filter(function(e){return e.tipo==="Rendimento";}).reduce(function(a,e){return a+e.valor;},0);
+    var totalResgatado = u.extrato.filter(function(e){return e.tipo==="Resgate";}).reduce(function(a,e){return a+e.valor;},0);
+    var serie = u.extrato.map(function(e){return e.saldoApos;});
+    var ultimos = u.extrato.slice(-5).reverse();
+
+    var rowsHtml = ultimos.length ? ultimos.map(function(e){
+      var cls = extratoBadgeClass(e.tipo);
+      var sign = extratoIsSaida(e) ? "-" : "+";
+      return '<tr><td class="mono" style="color:var(--ink-400)">'+fmtDate(e.data)+'</td><td><span class="badge '+cls+'">'+e.tipo+'</span></td>' +
+        '<td class="mono" style="text-align:right">'+sign+' '+fmtMoney(e.valor)+'</td></tr>';
+    }).join("") : '<tr class="empty-row"><td colspan="3">Nenhum lançamento ainda.</td></tr>';
+
+    return '<div class="content-header"><div><h1>Olá, '+esc(u.nome.split(" ")[0])+'</h1><p>Vinculado a '+esc(convenioNome(u.convenioId))+'</p></div>' +
+      '<button class="btn-sm" onclick="openModalResgate()">'+icon("wallet")+' Solicitar resgate</button></div>' +
+
+      '<div class="kpi-grid">' +
+        '<div class="kpi-card"><div class="kicon">'+icon("wallet")+'</div><div class="kval">'+fmtMoney(u.saldo)+'</div><div class="klabel">Saldo atual</div></div>' +
+        '<div class="kpi-card"><div class="kicon">'+icon("bolt")+'</div><div class="kval">'+fmtMoney(u.aporteMensal)+'</div><div class="klabel">Aporte mensal</div></div>' +
+        '<div class="kpi-card"><div class="kicon">'+icon("chart")+'</div><div class="kval">'+fmtMoney(totalRendimento)+'</div><div class="klabel">Rendimento acumulado</div></div>' +
+        '<div class="kpi-card"><div class="kicon">'+icon("book")+'</div><div class="kval">'+fmtMoney(totalAportado)+'</div><div class="klabel">Total aportado</div></div>' +
+      '</div>' +
+
+      '<div class="glass-card"><h3>Evolução do saldo</h3>' + sparkline(serie) + '</div>' +
+
+      '<div class="glass-card"><h3>Últimos lançamentos <button class="link-btn" onclick="setView(\'extrato\')">Ver extrato completo →</button></h3>' +
+      '<table class="data-table"><thead><tr><th>Data</th><th>Tipo</th><th style="text-align:right">Valor</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
+      '</div>';
+  }
+
+  function viewClientExtrato(){
+    var u = currentUser;
+    if(u.status !== "ativo"){
+      return '<div class="content-header"><div><h1>Extrato</h1></div></div><div class="glass-card"><div class="empty-state">'+icon("empty")+'<h4>Sem movimentações</h4><p>Seu extrato aparecerá aqui assim que sua adesão for aprovada.</p></div></div>';
+    }
+    var entries = u.extrato.slice().reverse();
+    var rows = entries.map(function(e){
+      var cls = extratoBadgeClass(e.tipo);
+      var isOut = extratoIsSaida(e);
+      return '<div class="passbook-row">' +
+        '<div class="pdate">'+fmtDate(e.data)+'</div>' +
+        '<div><span class="badge '+cls+'">'+e.tipo+'</span></div>' +
+        '<div class="pval '+(isOut?'neg':'pos')+'">'+(isOut?'- ':'+ ')+fmtMoney(e.valor)+'</div>' +
+        '<div class="psaldo">saldo '+fmtMoney(e.saldoApos)+'</div>' +
+      '</div>';
+    }).join("");
+    return '<div class="content-header"><div><h1>Extrato</h1><p>Caderneta de aportes, rendimentos e resgates</p></div></div>' +
+      '<div class="passbook">' + (rows || '<div class="empty-row" style="padding:30px; text-align:center; color:var(--ink-400);">Nenhum lançamento ainda.</div>') + '</div>';
+  }
+
+  function prazoLabel(u){
+    return (u.prazoMeses && u.prazoMeses > 0) ? (u.prazoMeses + " meses") : "Indeterminado (enquanto durar a adesão)";
+  }
+
+  function contratoDocumentoHTML(u, opts){
+    opts = opts || {};
+    var conv = db.convenios.find(function(c){ return c.id === u.convenioId; }) || {};
+    var e = db.empresa || {};
+    var foro = conv.cidadeUf || "[cidade/UF a definir]";
+    var prazoTxt = prazoLabel(u);
+
+    return '' +
+      '<div class="contract-doc">' +
+        '<div class="contract-doc-head">' +
+          '<div><strong>INSTRUMENTO PARTICULAR DE ADESÃO A PLANO DE POUPANÇA PROGRAMADA</strong><br><span>Desconto em folha de pagamento — mediante convênio com '+esc(conv.nome||"—")+'</span></div>' +
+          '<div class="contract-num">Nº '+esc((u.contrato&&u.contrato.numero)||"—")+'<br>Código de adesão: '+esc(u.codigoAdesao||"—")+'</div>' +
+        '</div>' +
+
+        '<p class="cdoc-section-title">QUALIFICAÇÃO DAS PARTES</p>' +
+        '<p><strong>CONTRATADA:</strong> '+esc(e.razaoSocial||"[razão social a preencher]")+', inscrita no CNPJ sob o nº '+esc(e.cnpj||"[CNPJ a preencher]")+
+          ', com sede em '+esc(e.endereco||"[endereço a preencher]")+', doravante denominada <strong>ML CONSÓRCIO</strong>, neste ato representada por '+
+          esc(e.representante||"[representante a preencher]")+', CPF nº '+esc(e.cpfRepresentante||"[CPF a preencher]")+', na qualidade de '+esc(e.cargoRepresentante||"representante legal")+'.</p>' +
+
+        '<p><strong>CONTRATANTE:</strong> '+esc(u.nome)+', '+esc(u.nacionalidade||"Brasileiro(a)")+', '+esc(u.estadoCivil||"estado civil não informado")+
+          ', portador(a) do RG nº '+esc(u.rg||"não informado")+' e do CPF nº '+formatCpf(u.cpf)+', matrícula funcional nº '+esc(u.matricula||"não informada")+
+          ', residente e domiciliado(a) em '+esc(u.endereco||"endereço não informado")+', doravante denominado(a) <strong>SERVIDOR(A)</strong>, vinculado(a) ao convênio firmado entre a ML Consórcio e '+esc(conv.nome||"—")+'.</p>' +
+
+        '<p><strong>INTERVENIENTE ANUENTE:</strong> '+esc(conv.nome||"—")+', na qualidade de órgão consignante, para fins exclusivos de operacionalização do desconto em folha de pagamento e repasse dos valores nos termos deste instrumento, sem qualquer responsabilidade financeira sobre o saldo ou a rentabilidade aqui pactuados.</p>' +
+
+        '<p class="cdoc-section-title">CLÁUSULAS E CONDIÇÕES</p>' +
+        '<ol class="contract-clauses">' +
+          '<li><strong>Do objeto.</strong> O presente instrumento tem por objeto a adesão do(a) SERVIDOR(A) a um plano de poupança programada ("caixinha"), mediante desconto mensal em folha de pagamento, cujos valores serão repassados à ML Consórcio para constituição de saldo individual rentabilizado.</li>' +
+          '<li><strong>Do valor e da forma de aporte.</strong> O(a) SERVIDOR(A) autoriza expressamente o desconto mensal de <strong>'+fmtMoney(u.aporteMensal)+'</strong> em sua folha de pagamento, com início na competência de <strong>'+fmtDate(u.dataInicioDesconto)+'</strong>'+(u.dataFimDesconto ? (' e término previsto em <strong>'+fmtDate(u.dataFimDesconto)+'</strong>') : ' e vigência indeterminada enquanto durar a adesão')+', a ser repassado pelo órgão consignante à ML Consórcio nos prazos definidos no convênio.</li>' +
+          '<li><strong>Da natureza da operação.</strong> O valor aportado constitui poupança de titularidade do(a) próprio(a) SERVIDOR(A), não configurando empréstimo, financiamento, dívida ou qualquer modalidade de operação de crédito, tampouco relação de consumo de crédito.</li>' +
+          '<li><strong>Da rentabilidade.</strong> O saldo constituído será rentabilizado pela ML Consórcio à razão estimada de <strong>'+fmtPct(u.indiceRendimento)+' ao mês</strong>, índice de caráter informativo e não garantido, salvo estipulação em contrário formalizada por aditivo.</li>' +
+          '<li><strong>Do prazo e vigência.</strong> Este instrumento vigorará pelo prazo de <strong>'+esc(prazoTxt)+'</strong>, contado da data de assinatura, podendo ser renovado ou encerrado mediante acordo entre as partes.</li>' +
+          '<li><strong>Do resgate.</strong> O(a) SERVIDOR(A) poderá solicitar o resgate total ou parcial do saldo constituído, observada a carência de <strong>'+u.carenciaDias+' dias</strong> e os prazos operacionais de processamento estabelecidos pela ML Consórcio.</li>' +
+          '<li><strong>Da rescisão e do cancelamento.</strong> Qualquer das partes poderá rescindir este instrumento mediante comunicação formal, sem prejuízo do saldo já constituído em favor do(a) SERVIDOR(A), que permanecerá disponível para resgate.</li>' +
+          '<li><strong>Da suspensão do desconto.</strong> Na hipótese de o órgão consignante deixar de processar o desconto ou o repasse em determinada competência, tal fato não constituirá inadimplemento do(a) SERVIDOR(A), cabendo à ML Consórcio adotar as medidas administrativas cabíveis junto ao órgão consignante.</li>' +
+          '<li><strong>Da proteção de dados.</strong> O(a) SERVIDOR(A) autoriza o tratamento de seus dados pessoais pela ML Consórcio e pelo órgão consignante, exclusivamente para as finalidades deste instrumento, nos termos da Lei nº 13.709/2018 (LGPD).</li>' +
+          '<li><strong>Do foro.</strong> Fica eleito o foro da comarca de <strong>'+esc(foro)+'</strong> para dirimir quaisquer controvérsias oriundas deste instrumento, com renúncia a qualquer outro, por mais privilegiado que seja.</li>' +
+          '<li><strong>Das disposições gerais.</strong> Este instrumento representa a integralidade do acordado entre as partes quanto ao seu objeto, obrigando-se as partes, seus herdeiros e sucessores ao seu fiel cumprimento.</li>' +
+        '</ol>' +
+
+        (opts.signatureBlock || '') +
+      '</div>';
+  }
+
+  function docHead(titulo, subtitulo, u){
+    return '<div class="contract-doc-head">' +
+        '<div><strong>'+titulo+'</strong><br><span>'+subtitulo+'</span></div>' +
+        '<div class="contract-num">Código de adesão: '+esc(u.codigoAdesao||"—")+'</div>' +
+      '</div>';
+  }
+
+  function assinaturaSimplesBlock(u, label){
+    var assinado = u.contrato && u.contrato.assinadoEm;
+    if(assinado){
+      return '<div class="signed-tag">'+icon("check")+' Assinado eletronicamente por '+esc(u.contrato.assinaturaNome||u.nome)+' em '+fmtDate(u.contrato.assinadoEm)+'</div>';
+    }
+    return '<div class="sign-box">' +
+        '<div class="sign-date" style="margin-bottom:22px;">'+esc((db.convenios.find(function(c){return c.id===u.convenioId;})||{}).cidadeUf||"__________________")+', ____ de ______________ de ________.</div>' +
+        '<div class="sign-lines"><div class="sign-line"><div class="line"></div><div class="sign-label">'+esc(u.nome)+' — '+esc(label||"SERVIDOR(A)")+' — CPF '+formatCpf(u.cpf)+'</div></div></div>' +
+      '</div>';
+  }
+
+  // 2. Ficha Cadastral do Servidor
+  function fichaCadastralHTML(u){
+    var conv = db.convenios.find(function(c){ return c.id === u.convenioId; }) || {};
+    var b = u.dadosBancarios || {};
+    return '<div class="contract-doc">' +
+      docHead("FICHA CADASTRAL DO SERVIDOR", "Plano de poupança programada — "+esc(conv.nome||"—"), u) +
+      '<p class="cdoc-section-title">Dados pessoais</p>' +
+      '<p><strong>Nome:</strong> '+esc(u.nome)+'</p>' +
+      '<p><strong>RG:</strong> '+esc(u.rg||"não informado")+' &nbsp; <strong>CPF:</strong> '+formatCpf(u.cpf)+' &nbsp; <strong>Estado civil:</strong> '+esc(u.estadoCivil||"não informado")+'</p>' +
+      '<p><strong>Endereço:</strong> '+esc(u.endereco||"não informado")+'</p>' +
+      '<p><strong>E-mail:</strong> '+esc(u.email||"—")+'</p>' +
+      '<p class="cdoc-section-title">Dados funcionais</p>' +
+      '<p><strong>Matrícula funcional:</strong> '+esc(u.matricula||"não informada")+' &nbsp; <strong>Cargo:</strong> '+esc(u.cargo||"não informado")+'</p>' +
+      '<p><strong>Lotação:</strong> '+esc(u.lotacao||"não informada")+' &nbsp; <strong>Vínculo:</strong> '+esc(u.vinculo||"não informado")+'</p>' +
+      '<p><strong>Órgão consignante:</strong> '+esc(conv.nome||"—")+'</p>' +
+      '<p class="cdoc-section-title">Dados bancários (para resgate)</p>' +
+      '<p><strong>Banco:</strong> '+esc(b.banco||"não informado")+' &nbsp; <strong>Agência:</strong> '+esc(b.agencia||"não informada")+' &nbsp; <strong>Conta:</strong> '+esc(b.conta||"não informada")+' ('+esc(b.tipoConta||"—")+')</p>' +
+      (b.pix ? '<p><strong>Chave PIX:</strong> '+esc(b.pix)+'</p>' : '') +
+      '<p class="cdoc-section-title">Histórico de adesão</p>' +
+      '<p><strong>Data de início:</strong> '+fmtDate(u.dataAdesao||u.dataInicioDesconto)+' &nbsp; <strong>Valor da contribuição:</strong> '+fmtMoney(u.aporteMensal)+' &nbsp; <strong>Prazo:</strong> '+esc(prazoLabel(u))+'</p>' +
+      '<div class="cdoc-legalnote">Declaro, sob as penas da lei, que as informações prestadas nesta ficha cadastral são verdadeiras e de minha inteira responsabilidade, comprometendo-me a comunicar à ML Consórcio qualquer alteração cadastral.</div>' +
+      assinaturaSimplesBlock(u, "SERVIDOR(A) — declarante") +
+    '</div>';
+  }
+
+  // 3. Autorização de Desconto em Folha
+  function autorizacaoDescontoHTML(u){
+    var conv = db.convenios.find(function(c){ return c.id === u.convenioId; }) || {};
+    return '<div class="contract-doc">' +
+      docHead("AUTORIZAÇÃO DE DESCONTO EM FOLHA DE PAGAMENTO", "Fonte pagadora: "+esc(conv.nome||"—"), u) +
+      '<p>Eu, <strong>'+esc(u.nome)+'</strong>, portador(a) do CPF nº '+formatCpf(u.cpf)+' e matrícula funcional nº '+esc(u.matricula||"não informada")+', ocupante do cargo de '+esc(u.cargo||"não informado")+', lotado(a) em '+esc(u.lotacao||"não informada")+', <strong>AUTORIZO, de forma expressa e irrevogável até a rescisão deste instrumento</strong>, o desconto em minha folha de pagamento, pela fonte pagadora <strong>'+esc(conv.nome||"—")+'</strong>, do valor abaixo especificado, em favor da ML Consórcio.</p>' +
+      '<p class="cdoc-section-title">Condições do desconto</p>' +
+      '<p><strong>Valor mensal:</strong> '+fmtMoney(u.aporteMensal)+' &nbsp; <strong>Periodicidade:</strong> mensal, na competência de pagamento</p>' +
+      '<p><strong>Início do desconto:</strong> '+fmtDate(u.dataInicioDesconto)+' &nbsp; <strong>Término:</strong> '+(u.dataFimDesconto ? fmtDate(u.dataFimDesconto) : "indeterminado, enquanto durar a adesão")+'</p>' +
+      '<p class="cdoc-section-title">Da irrevogabilidade e da margem consignável</p>' +
+      '<p>Esta autorização é <strong>irrevogável e irretratável</strong> pelo prazo de vigência da adesão, somente podendo ser suspensa mediante rescisão formal do instrumento de adesão firmado com a ML Consórcio, observado o prazo operacional necessário para baixa junto à fonte pagadora.</p>' +
+      '<div class="cdoc-legalnote">Tenho ciência de que o valor ora autorizado, somado às demais consignações já existentes em minha folha de pagamento, não poderá ultrapassar o limite de <strong>35% (trinta e cinco por cento)</strong> da minha remuneração líquida, conforme legislação e normas do órgão consignante, sendo de minha responsabilidade informar eventual extrapolação desse limite.</div>' +
+      assinaturaSimplesBlock(u, "SERVIDOR(A) — autorizante") +
+    '</div>';
+  }
+
+  // 4. Declaração de Ciência e Responsabilidade
+  function declaracaoCienciaHTML(u){
+    return '<div class="contract-doc">' +
+      docHead("DECLARAÇÃO DE CIÊNCIA E RESPONSABILIDADE", "Plano de poupança programada — adesão nº "+esc((u.contrato&&u.contrato.numero)||"—"), u) +
+      '<p>Eu, <strong>'+esc(u.nome)+'</strong>, CPF nº '+formatCpf(u.cpf)+', declaro, para os devidos fins, que tenho pleno conhecimento e concordo com as seguintes condições do plano de poupança programada ao qual estou aderindo junto à ML Consórcio:</p>' +
+      '<ol class="contract-clauses">' +
+        '<li>Tenho ciência da <strong>carência mínima de '+esc(u.carenciaDias)+' dias</strong>, contada da data de adesão, para a solicitação de resgate total ou parcial do saldo constituído.</li>' +
+        '<li>Tenho ciência de que a rentabilidade de <strong>'+fmtPct(u.indiceRendimento)+' ao mês</strong> aplicada ao saldo é <strong>estimada e não garantida</strong>, podendo variar conforme critérios da ML Consórcio, sem constituir promessa de rendimento fixo.</li>' +
+        '<li>Declaro ser o(a) <strong>titular exclusivo(a)</strong> do saldo constituído em meu nome no âmbito deste plano, não cabendo cessão, penhora ou transferência a terceiros, salvo determinação judicial.</li>' +
+        '<li>Reconheço e aceito as regras de resgate e de cancelamento da adesão descritas no Instrumento Particular de Adesão, inclusive quanto aos prazos operacionais de processamento.</li>' +
+        '<li>Declaro que recebi orientação clara sobre a natureza do produto, tratando-se de poupança programada e não de aplicação financeira regulada, empréstimo consignado ou produto bancário.</li>' +
+      '</ol>' +
+      assinaturaSimplesBlock(u, "SERVIDOR(A) — declarante") +
+    '</div>';
+  }
+
+  // 5. Termo de Proteção de Dados (LGPD)
+  function termoLgpdHTML(u){
+    var conv = db.convenios.find(function(c){ return c.id === u.convenioId; }) || {};
+    return '<div class="contract-doc">' +
+      docHead("TERMO DE CONSENTIMENTO PARA TRATAMENTO DE DADOS PESSOAIS", "Lei nº 13.709/2018 (LGPD)", u) +
+      '<p>Eu, <strong>'+esc(u.nome)+'</strong>, CPF nº '+formatCpf(u.cpf)+', <strong>autorizo</strong> a ML Consórcio e, no que for estritamente necessário à operacionalização do desconto em folha, o órgão consignante <strong>'+esc(conv.nome||"—")+'</strong>, a realizar o tratamento dos meus dados pessoais (incluindo dados de identificação, funcionais, de contato e bancários) nos termos abaixo.</p>' +
+      '<p class="cdoc-section-title">Finalidade</p>' +
+      '<p>Os dados pessoais coletados serão utilizados <strong>exclusivamente</strong> para a execução do Instrumento Particular de Adesão, para a operacionalização do desconto em folha de pagamento, para o processamento de aportes e resgates, e para comunicações relacionadas ao plano de poupança programada.</p>' +
+      '<p class="cdoc-section-title">Sigilo e compartilhamento</p>' +
+      '<p>A ML Consórcio garante o sigilo dos dados pessoais tratados, não os compartilhando com terceiros não autorizados nem os utilizando para finalidade diversa da aqui prevista, adotando medidas técnicas e administrativas razoáveis para sua proteção.</p>' +
+      '<p class="cdoc-section-title">Direitos do titular</p>' +
+      '<p>Tenho ciência de que posso, a qualquer momento, <strong>revogar este consentimento</strong> e exercer os demais direitos previstos na LGPD (acesso, correção, eliminação, portabilidade e informação sobre o compartilhamento de dados), mediante solicitação formal à ML Consórcio, ressalvados os dados cuja manutenção seja exigida por obrigação legal ou regulatória.</p>' +
+      assinaturaSimplesBlock(u, "SERVIDOR(A) — titular dos dados") +
+    '</div>';
+  }
+
+  // 7. Comprovante de Adesão
+  function comprovanteAdesaoHTML(u){
+    var conv = db.convenios.find(function(c){ return c.id === u.convenioId; }) || {};
+    var e = db.empresa || {};
+    return '<div class="contract-doc">' +
+      docHead("COMPROVANTE DE ADESÃO", "Plano de poupança programada — "+esc(conv.nome||"—"), u) +
+      '<p class="cdoc-section-title">Dados do servidor</p>' +
+      '<p><strong>Nome:</strong> '+esc(u.nome)+' &nbsp; <strong>CPF:</strong> '+formatCpf(u.cpf)+' &nbsp; <strong>Matrícula:</strong> '+esc(u.matricula||"não informada")+'</p>' +
+      '<p class="cdoc-section-title">Dados da adesão</p>' +
+      '<p><strong>Código interno de adesão:</strong> '+esc(u.codigoAdesao||"—")+' &nbsp; <strong>Nº do contrato:</strong> '+esc((u.contrato&&u.contrato.numero)||"—")+'</p>' +
+      '<p><strong>Valor da contribuição mensal:</strong> '+fmtMoney(u.aporteMensal)+'</p>' +
+      '<p><strong>Prazo de vigência:</strong> '+esc(prazoLabel(u))+'</p>' +
+      '<p><strong>Data de início:</strong> '+fmtDate(u.dataInicioDesconto)+(u.dataFimDesconto ? (' &nbsp; <strong>Data de término prevista:</strong> '+fmtDate(u.dataFimDesconto)) : '')+'</p>' +
+      (u.contrato && u.contrato.assinadoEm ?
+        '<div class="signed-tag">'+icon("check")+' Adesão confirmada — assinatura eletrônica de '+esc(u.contrato.assinaturaNome||u.nome)+' em '+fmtDate(u.contrato.assinadoEm)+'</div>' :
+        '<div class="cdoc-legalnote">Adesão registrada, aguardando assinatura do instrumento de adesão para confirmação.</div>') +
+      '<p style="margin-top:18px; font-size:12px; color:var(--ink-400);">Documento emitido automaticamente pelo sistema, com assinatura digital da ML Consórcio, representada por '+esc(e.representante||"—")+'.</p>' +
+    '</div>';
+  }
+
+  // 6. Extrato (inicial e/ou mensal) — formatado para impressão
+  function extratoDocumentoHTML(u){
+    var entradas = (u.extrato||[]).slice();
+    var titulo = entradas.length <= 1 ? "EXTRATO INICIAL" : "EXTRATO DE MOVIMENTAÇÕES";
+    var linhas = entradas.length ?
+      entradas.map(function(e){
+        var sinal = e.tipo === "Resgate" ? "-" : "+";
+        return '<tr><td>'+fmtDate(e.data)+'</td><td>'+esc(e.tipo)+'</td><td style="text-align:right">'+sinal+' '+fmtMoney(e.valor)+'</td><td style="text-align:right">'+fmtMoney(e.saldoApos)+'</td></tr>';
+      }).join("") :
+      '<tr><td colspan="4" style="text-align:center; color:var(--ink-400);">Nenhuma movimentação registrada até o momento.</td></tr>';
+    return '<div class="contract-doc">' +
+      docHead(titulo, "Servidor: "+esc(u.nome)+" — CPF "+formatCpf(u.cpf), u) +
+      '<table class="data-table" style="width:100%;"><thead><tr><th>Data</th><th>Tipo</th><th style="text-align:right">Valor</th><th style="text-align:right">Saldo após</th></tr></thead>' +
+      '<tbody>'+linhas+'</tbody></table>' +
+      '<p style="margin-top:16px;"><strong>Saldo atual:</strong> '+fmtMoney(u.saldo)+'</p>' +
+    '</div>';
+  }
+
+  // Dossiê completo (todos os documentos, com quebra de página entre eles, para impressão)
+  function gerarDossieCompletoHTML(u){
+    var docs = [
+      contratoDocumentoHTML(u, {signatureBlock: assinaturaSimplesBlock(u, "SERVIDOR(A)")}),
+      fichaCadastralHTML(u),
+      autorizacaoDescontoHTML(u),
+      declaracaoCienciaHTML(u),
+      termoLgpdHTML(u),
+      comprovanteAdesaoHTML(u),
+      extratoDocumentoHTML(u)
+    ];
+    return docs.map(function(d){ return '<div class="glass-card dossie-page">'+d+'</div>'; }).join("");
+  }
+
+  // Injeta o dossiê completo num container temporário e dispara a impressão do navegador.
+  window.imprimirDossie = function(userId){
+    var u = getUser(userId);
+    if(!u){ toast("Servidor não encontrado.", "err"); return; }
+    var old = document.getElementById("dossiePrintArea");
+    if(old) old.remove();
+    var container = document.createElement("div");
+    container.id = "dossiePrintArea";
+    container.innerHTML = gerarDossieCompletoHTML(u);
+    document.body.appendChild(container);
+    document.body.classList.add("printing-dossie");
+    setTimeout(function(){
+      window.print();
+      document.body.classList.remove("printing-dossie");
+      container.remove();
+    }, 60);
+  };
+
+  function viewClientContrato(){
+    var u = currentUser;
+    if(u.status === "pendente"){
+      return '<div class="content-header"><div><h1>Meu Contrato</h1></div></div><div class="glass-card"><div class="empty-state">'+icon("empty")+'<h4>Adesão em análise</h4><p>O contrato será gerado aqui assim que a ML Consórcio aprovar sua adesão.</p></div></div>';
+    }
+    if(u.status === "recusado"){
+      return '<div class="content-header"><div><h1>Meu Contrato</h1></div></div><div class="glass-card"><div class="empty-state">'+icon("empty")+'<h4>Adesão não aprovada</h4><p>Entre em contato com a ML Consórcio para mais informações sobre sua adesão.</p></div></div>';
+    }
+    if(u.status === "aguardando_assinatura"){
+      var sigBlockPending =
+        '<div class="sign-box">' +
+          '<h4>Assinatura</h4>' +
+          '<p style="font-size:12.5px; color:var(--ink-400); margin-bottom:16px;">Imprima este contrato em duas vias. Assine de próprio punho, colha a assinatura de duas testemunhas e entregue à ML Consórcio junto com a via da Prefeitura/convênio.</p>' +
+          '<div class="sign-date" style="margin-bottom:22px;">'+esc((db.convenios.find(function(c){return c.id===u.convenioId;})||{}).cidadeUf||"__________________")+', ____ de ______________ de ________.</div>' +
+          '<div class="sign-lines">' +
+            '<div class="sign-line"><div class="line"></div><div class="sign-label">'+esc(u.nome)+' — SERVIDOR(A) — CPF '+formatCpf(u.cpf)+'</div></div>' +
+            '<div class="sign-line"><div class="line"></div><div class="sign-label">'+esc((db.empresa&&db.empresa.representante)||"ML Consórcio")+' — ML CONSÓRCIO</div></div>' +
+          '</div>' +
+          '<div class="sign-lines" style="margin-top:10px;">' +
+            '<div class="sign-line"><div class="line"></div><div class="sign-label">Testemunha 1 — Nome/CPF</div></div>' +
+            '<div class="sign-line"><div class="line"></div><div class="sign-label">Testemunha 2 — Nome/CPF</div></div>' +
+          '</div>' +
+        '</div>';
+      return '<div class="content-header"><div><h1>Meu Contrato</h1><p>Documento gerado — pronto para assinatura</p></div>' +
+        '<div style="display:flex; gap:8px; flex-wrap:wrap;">' +
+        '<button class="btn-ghost" onclick="window.print()">'+icon("doc")+' Imprimir contrato</button>' +
+        '<button class="btn-sm" onclick="imprimirDossie(\''+u.id+'\')">'+icon("doc")+' Imprimir documentação completa</button>' +
+        '</div></div>' +
+        '<div class="glass-card">' + contratoDocumentoHTML(u, {signatureBlock: sigBlockPending}) + '</div>' +
+        '<div class="glass-card"><div class="empty-state">' + icon("empty") +
+        '<h4>Aguardando confirmação da ML Consórcio</h4>' +
+        '<p>Assim que a ML Consórcio receber e conferir o documento assinado, seu plano será ativado e seu saldo passará a ser exibido aqui.</p>' +
+        '</div></div>';
+    }
+    // ativo
+    var assinadoBlock = '<div class="signed-tag">'+icon("check")+' Contrato assinado — confirmado pela ML Consórcio em '+fmtDate(u.contrato&&u.contrato.assinadoEm)+'</div>';
+    return '<div class="content-header"><div><h1>Meu Contrato</h1><p>Plano de poupança programada (caixinha) — ativo</p></div>' +
+      '<div style="display:flex; gap:8px; flex-wrap:wrap;">' +
+      '<button class="btn-ghost" onclick="window.print()">'+icon("doc")+' Imprimir contrato</button>' +
+      '<button class="btn-sm" onclick="imprimirDossie(\''+u.id+'\')">'+icon("doc")+' Imprimir documentação completa</button>' +
+      '</div></div>' +
+      '<div class="glass-card">' + contratoDocumentoHTML(u, {signatureBlock: assinadoBlock}) + '</div>';
+  }
+
+  window.openModalResgate = function(){
+    var u = currentUser;
+    openModal(
+      '<button class="modal-close" onclick="closeModal()">'+icon("x")+'</button>' +
+      '<h3>Solicitar resgate</h3><div class="msub">Saldo disponível: <strong>'+fmtMoney(u.saldo)+'</strong></div>' +
+      '<form onsubmit="return submitResgate(event)">' +
+        '<div class="field"><label>Valor do resgate (R$)</label><input type="number" step="0.01" min="0.01" max="'+u.saldo+'" id="resgateValor" placeholder="0,00" required></div>' +
+        '<div class="modal-note">Sua solicitação será enviada para análise da ML Consórcio. O valor só é debitado do seu saldo após a aprovação.</div>' +
+        '<div class="modal-actions"><button type="button" class="btn-ghost" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-sm">Solicitar</button></div>' +
+      '</form>'
+    );
+  };
+
+  window.submitResgate = async function(ev){
+    ev.preventDefault();
+    var valor = parseFloat(document.getElementById("resgateValor").value);
+    var u = currentUser;
+    if(!valor || valor <= 0 || valor > u.saldo){ toast("Valor inválido para resgate.", "err"); return false; }
+    try{
+      await updateDoc(doc(fsdb, "users", u.id), {
+        resgates: arrayUnion({ id:uid("rg"), valor:valor, data:todayISO(), status:"pendente" })
+      });
+      closeModal();
+      toast("Solicitação de resgate enviada. Aguarde a análise.");
+    }catch(err){
+      toast("Erro ao enviar solicitação: "+err.message, "err");
+    }
+    return false;
+  };
+
+  // =========================== ADMIN ===========================
+  function viewAdminOverview(){
+    var ativos = db.users.filter(function(u){return u.role==="cliente" && u.status==="ativo";});
+    var totalSaldo = ativos.reduce(function(a,u){return a+u.saldo;},0);
+    var convAtivos = db.convenios.filter(function(c){return c.status==="ativo";}).length;
+
+    var rowsConv = db.convenios.map(function(c){
+      var nServ = db.users.filter(function(u){return u.role==="cliente" && u.convenioId===c.id && u.status==="ativo";}).length;
+      return '<tr><td>'+esc(c.nome)+'</td><td class="mono" style="color:var(--ink-400)">'+esc(c.cnpj||"—")+'</td>' +
+        '<td>'+nServ+'</td><td><span class="badge b-'+c.status+'">'+ (c.status==="ativo"?"Ativo":"Inativo") +'</span></td></tr>';
+    }).join("") || '<tr class="empty-row"><td colspan="4">Nenhum convênio cadastrado.</td></tr>';
+
+    return '<div class="content-header"><div><h1>Visão Geral</h1><p>Painel administrativo · ML Consórcio</p></div></div>' +
+      '<div class="kpi-grid">' +
+        '<div class="kpi-card"><div class="kicon">'+icon("wallet")+'</div><div class="kval">'+fmtMoney(totalSaldo)+'</div><div class="klabel">Saldo total sob gestão</div></div>' +
+        '<div class="kpi-card"><div class="kicon">'+icon("users")+'</div><div class="kval">'+ativos.length+'</div><div class="klabel">Servidores ativos</div></div>' +
+        '<div class="kpi-card"><div class="kicon">'+icon("doc")+'</div><div class="kval">'+pendingCount()+'</div><div class="klabel">Adesões pendentes</div></div>' +
+        '<div class="kpi-card"><div class="kicon">'+icon("bolt")+'</div><div class="kval">'+resgatesPendentesCount()+'</div><div class="klabel">Resgates pendentes</div></div>' +
+        '<div class="kpi-card"><div class="kicon">'+icon("building")+'</div><div class="kval">'+convAtivos+'</div><div class="klabel">Convênios ativos</div></div>' +
+      '</div>' +
+      '<div class="glass-card"><h3>Convênios cadastrados <button class="link-btn" onclick="setView(\'convenios\')">Gerenciar →</button></h3>' +
+      '<table class="data-table"><thead><tr><th>Convênio / Prefeitura</th><th>CNPJ</th><th>Servidores</th><th>Status</th></tr></thead><tbody>'+rowsConv+'</tbody></table></div>';
+  }
+
+  function viewAdminConvenios(){
+    var rows = db.convenios.map(function(c){
+      return '<tr><td><strong>'+esc(c.nome)+'</strong></td><td class="mono" style="color:var(--ink-400)">'+esc(c.cnpj||"—")+'</td>' +
+        '<td>'+esc(c.cidadeUf||"—")+'</td><td>'+esc(c.responsavel||"—")+'</td><td>'+fmtDate(c.dataConvenio)+'</td>' +
+        '<td><span class="badge b-'+c.status+'">'+(c.status==="ativo"?"Ativo":"Inativo")+'</span></td></tr>';
+    }).join("") || '<tr class="empty-row"><td colspan="6">Nenhum convênio cadastrado ainda.</td></tr>';
+
+    return '<div class="content-header"><div><h1>Convênios</h1><p>Prefeituras e órgãos conveniados com a ML Consórcio</p></div>' +
+      '<button class="btn-sm" onclick="openModalNovoConvenio()">'+icon("plus")+' Novo convênio</button></div>' +
+      '<div class="glass-card"><table class="data-table"><thead><tr><th>Convênio</th><th>CNPJ</th><th>Cidade/UF</th><th>Responsável</th><th>Data</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  }
+
+  window.openModalNovoConvenio = function(){
+    openModal(
+      '<button class="modal-close" onclick="closeModal()">'+icon("x")+'</button>' +
+      '<h3>Novo convênio</h3><div class="msub">Cadastre a prefeitura ou órgão conveniado</div>' +
+      '<form onsubmit="return submitNovoConvenio(event)">' +
+        '<div class="field"><label>Nome do órgão / Prefeitura</label><input type="text" id="cvNome" required></div>' +
+        '<div class="row2">' +
+          '<div class="field"><label>CNPJ</label><input type="text" id="cvCnpj" placeholder="00.000.000/0001-00" maxlength="18" inputmode="numeric" oninput="maskCnpj(this)"></div>' +
+          '<div class="field"><label>Cidade/UF</label><input type="text" id="cvCidadeUf" placeholder="Melgaço/PA"></div>' +
+        '</div>' +
+        '<div class="row2">' +
+          '<div class="field"><label>Data do convênio</label><input type="text" id="cvData" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" oninput="maskData(this)" value="'+isoDateToBr(todayISO())+'"></div>' +
+          '<div class="field"><label>Responsável / Setor</label><input type="text" id="cvResp" placeholder="Ex.: Secretaria de Administração"></div>' +
+        '</div>' +
+        '<div class="row2">' +
+          '<div class="field"><label>Telefone</label><input type="text" id="cvTel" placeholder="(00) 00000-0000" maxlength="15" inputmode="numeric" oninput="maskTelefone(this)"></div>' +
+          '<div class="field"><label>E-mail</label><input type="email" id="cvEmail"></div>' +
+        '</div>' +
+        '<div class="modal-actions"><button type="button" class="btn-ghost" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-sm">Cadastrar</button></div>' +
+      '</form>'
+    );
+  };
+
+  window.submitNovoConvenio = async function(ev){
+    ev.preventDefault();
+    var nome = document.getElementById("cvNome").value.trim();
+    if(!nome){ toast("Informe o nome do convênio.", "err"); return false; }
+    var newId = uid("cv");
+    try{
+      await fsSaveConvenio(newId, {
+        nome: nome,
+        cnpj: document.getElementById("cvCnpj").value.trim(),
+        cidadeUf: document.getElementById("cvCidadeUf").value.trim(),
+        dataConvenio: brDateToIso(document.getElementById("cvData").value.trim()) || todayISO(),
+        responsavel: document.getElementById("cvResp").value.trim(),
+        telefone: document.getElementById("cvTel").value.trim(),
+        email: document.getElementById("cvEmail").value.trim(),
+        status: "ativo"
+      });
+      closeModal();
+      toast("Convênio cadastrado com sucesso.");
+    }catch(err){
+      toast("Erro ao cadastrar convênio: "+err.message, "err");
+    }
+    return false;
+  };
+
+  var servidoresTab = "pendente";
+
+  function btnWhatsServidor(u){
+    var msg = "Olá "+ (u.nome ? u.nome.split(" ")[0] : "") +", aqui é da ML Consórcio.";
+    var link = waLink(u.telefone, msg);
+    if(!link){
+      return '<button class="btn-ghost btn-whats disabled" title="Telefone não cadastrado" onclick="return false;">'+icon("whats")+' WhatsApp</button>';
+    }
+    return '<a class="btn-ghost btn-whats" href="'+link+'" target="_blank" rel="noopener" title="Falar com '+esc(u.nome)+' no WhatsApp">'+icon("whats")+' WhatsApp</a>';
+  }
+
+  function viewAdminServidores(){
+    var clientes = db.users.filter(function(u){ return u.role === "cliente"; });
+    var counts = {
+      pendente: clientes.filter(function(u){return u.status==="pendente";}).length,
+      aguardando_assinatura: clientes.filter(function(u){return u.status==="aguardando_assinatura";}).length,
+      ativo: clientes.filter(function(u){return u.status==="ativo";}).length,
+      recusado: clientes.filter(function(u){return u.status==="recusado";}).length
+    };
+    var list = clientes.filter(function(u){ return u.status === servidoresTab; });
+
+    var tabs = ["pendente","aguardando_assinatura","ativo","recusado"].map(function(t){
+      var labels = {pendente:"Pendentes", aguardando_assinatura:"Aguardando assinatura", ativo:"Ativos", recusado:"Recusados"};
+      return '<button class="tab-btn'+(servidoresTab===t?' active':'')+'" onclick="setServidoresTab(\''+t+'\')">'+labels[t]+' <span class="count">'+counts[t]+'</span></button>';
+    }).join("");
+
+    var rows;
+    if(servidoresTab === "pendente"){
+      rows = list.map(function(u){
+        return '<tr><td><strong>'+esc(u.nome)+'</strong></td><td class="mono" style="color:var(--ink-400)">'+formatCpf(u.cpf)+'</td>' +
+          '<td>'+esc(u.email)+'</td>' +
+          '<td style="text-align:right; white-space:nowrap;"><button class="btn-ghost" onclick="openModalEditarServidor(\''+u.id+'\')">'+icon("gear")+' Editar dados</button> ' +
+          btnWhatsServidor(u) + ' ' +
+          '<button class="btn-ghost" onclick="openModalAnalisar(\''+u.id+'\')">Analisar</button> ' +
+          '<button class="btn-ghost btn-danger-ghost" onclick="openModalExcluirServidor(\''+u.id+'\')">'+icon("x")+' Excluir</button></td></tr>';
+      }).join("");
+    } else if(servidoresTab === "aguardando_assinatura"){
+      rows = list.map(function(u){
+        return '<tr><td><strong>'+esc(u.nome)+'</strong></td><td class="mono" style="color:var(--ink-400)">'+formatCpf(u.cpf)+'</td>' +
+          '<td>'+esc(convenioNome(u.convenioId))+'</td>' +
+          '<td class="mono">'+fmtMoney(u.aporteMensal)+'</td>' +
+          '<td>'+fmtDate(u.contrato&&u.contrato.geradoEm)+'</td>' +
+          '<td style="text-align:right; white-space:nowrap;"><button class="btn-ghost" onclick="openModalEditarServidor(\''+u.id+'\')">'+icon("gear")+' Editar dados</button> ' +
+          btnWhatsServidor(u) + ' ' +
+          '<button class="btn-ghost" onclick="openModalVerContrato(\''+u.id+'\')">'+icon("eye")+' Ver contrato</button> ' +
+          '<button class="btn-ghost" onclick="confirmarAssinaturaFisica(\''+u.id+'\')">'+icon("check")+' Confirmar assinatura</button> ' +
+          '<button class="btn-ghost btn-danger-ghost" onclick="openModalExcluirServidor(\''+u.id+'\')">'+icon("x")+' Excluir</button></td></tr>';
+      }).join("");
+    } else if(servidoresTab === "ativo"){
+      rows = list.map(function(u){
+        return '<tr><td><strong>'+esc(u.nome)+'</strong></td><td class="mono" style="color:var(--ink-400)">'+formatCpf(u.cpf)+'</td>' +
+          '<td>'+esc(convenioNome(u.convenioId))+'</td>' +
+          '<td class="mono">'+fmtMoney(u.aporteMensal)+'</td>' +
+          '<td class="mono">'+fmtMoney(u.saldo)+'</td>' +
+          '<td style="text-align:right; white-space:nowrap;"><button class="btn-ghost" onclick="openModalEditarServidor(\''+u.id+'\')">'+icon("gear")+' Editar dados</button> ' +
+          btnWhatsServidor(u) + ' ' +
+          '<button class="btn-ghost" onclick="openModalNovoLancamento(\''+u.id+'\')">'+icon("plus")+' Novo lançamento</button> ' +
+          '<button class="btn-ghost" onclick="lancarAporte(\''+u.id+'\')">'+icon("bolt")+' Lançar aporte</button> ' +
+          '<button class="btn-ghost" onclick="openModalVerExtrato(\''+u.id+'\')">'+icon("eye")+' Extrato</button> ' +
+          '<button class="btn-ghost" onclick="openModalVerContrato(\''+u.id+'\')">'+icon("doc")+' Documentação</button> ' +
+          '<button class="btn-ghost btn-danger-ghost" onclick="openModalExcluirServidor(\''+u.id+'\')">'+icon("x")+' Excluir</button></td></tr>';
+      }).join("");
+    } else {
+      rows = list.map(function(u){
+        return '<tr><td><strong>'+esc(u.nome)+'</strong></td><td class="mono" style="color:var(--ink-400)">'+formatCpf(u.cpf)+'</td>' +
+          '<td>'+esc(u.email)+'</td><td><span class="badge b-recusado">Recusado</span></td>' +
+          '<td style="text-align:right"><button class="btn-ghost btn-danger-ghost" onclick="openModalExcluirServidor(\''+u.id+'\')">'+icon("x")+' Excluir</button></td></tr>';
+      }).join("");
+    }
+    var colspanMap = { pendente:4, aguardando_assinatura:6, ativo:6, recusado:5 };
+    if(!list.length){
+      rows = '<tr class="empty-row"><td colspan="'+colspanMap[servidoresTab]+'">Nenhum servidor nesta categoria.</td></tr>';
+    }
+
+    var heads = {
+      pendente: '<th>Nome</th><th>CPF</th><th>E-mail</th><th></th>',
+      aguardando_assinatura: '<th>Nome</th><th>CPF</th><th>Convênio</th><th>Aporte mensal</th><th>Contrato gerado em</th><th></th>',
+      ativo: '<th>Nome</th><th>CPF</th><th>Convênio</th><th>Aporte mensal</th><th>Saldo</th><th></th>',
+      recusado: '<th>Nome</th><th>CPF</th><th>E-mail</th><th>Status</th><th></th>'
+    };
+
+    return '<div class="content-header"><div><h1>Servidores</h1><p>Adesões, contratos e cadastro</p></div>' +
+      '<button class="btn-sm" onclick="openModalNovoServidor()">'+icon("plus")+' Novo servidor</button></div>' +
+      '<div class="tabs-row">'+tabs+'</div>' +
+      '<div class="glass-card"><table class="data-table"><thead><tr>'+heads[servidoresTab]+'</tr></thead><tbody>'+rows+'</tbody></table></div>';
+  }
+  window.setServidoresTab = function(t){ servidoresTab = t; renderContent(); };
+
+  window.openModalVerContrato = function(userId){
+    var u = getUser(userId);
+    var footer = '<div class="modal-actions"><button class="btn-ghost" onclick="closeModal()">Fechar</button>' +
+      '<button class="btn-ghost" onclick="imprimirDossie(\''+userId+'\')">'+icon("doc")+' Imprimir documentação completa</button>' +
+      (u.status === "aguardando_assinatura" ? '<button class="btn-sm" onclick="confirmarAssinaturaFisica(\''+userId+'\')">'+icon("check")+' Confirmar assinatura</button>' : '') +
+      '</div>';
+    openModal(
+      '<button class="modal-close" onclick="closeModal()">'+icon("x")+'</button>' +
+      contratoDocumentoHTML(u, {}) + footer
+    );
+  };
+
+  window.confirmarAssinaturaFisica = async function(userId){
+    var u = getUser(userId);
+    try{
+      await updateDoc(doc(fsdb, "users", userId), {
+        status: "ativo",
+        dataAdesao: todayISO(),
+        "contrato.assinadoEm": todayISO(),
+        "contrato.assinaturaNome": u.nome
+      });
+      closeModal();
+      toast("Assinatura confirmada. Servidor ativo.");
+      servidoresTab = "ativo";
+      abrirModalRecibo(userId, "Adesão ativada", [
+        "Convênio: " + convenioNome(u.convenioId),
+        "Aporte mensal: " + fmtMoney(u.aporteMensal),
+        "Início do desconto em folha: " + fmtDate(u.dataInicioDesconto)
+      ]);
+    }catch(err){
+      toast("Erro ao confirmar assinatura: "+err.message, "err");
+    }
+  };
+
+  function formatCpf(cpf){
+    cpf = onlyDigits(cpf||"");
+    if(cpf.length !== 11) return cpf || "—";
+    return cpf.slice(0,3)+"."+cpf.slice(3,6)+"."+cpf.slice(6,9)+"-"+cpf.slice(9);
+  }
+
+  window.openModalExcluirServidor = function(userId){
+    var u = getUser(userId);
+    if(!u) return;
+    var temHistorico = (u.saldo > 0) || (u.extrato && u.extrato.length > 0);
+    openModal(
+      '<button class="modal-close" onclick="closeModal()">'+icon("x")+'</button>' +
+      '<h3>Excluir servidor</h3><div class="msub">'+esc(u.nome)+' · '+formatCpf(u.cpf)+'</div>' +
+      '<div class="cdoc-legalnote">Esta ação remove o cadastro, o contrato e o extrato do servidor do sistema e <strong>não pode ser desfeita</strong>.' +
+      (temHistorico ? ' Este servidor possui saldo e/ou movimentações registradas — considere manter um registro externo (ex.: imprimir a documentação completa) antes de excluir.' : '') +
+      ' O login (e-mail/senha) desta pessoa deixará de funcionar, pois o perfil no banco de dados será removido.</div>' +
+      '<div class="modal-actions">' +
+        '<button type="button" class="btn-ghost" onclick="closeModal()">Cancelar</button>' +
+        '<button type="button" class="btn-sm btn-danger" onclick="excluirServidor(\''+userId+'\')">'+icon("x")+' Excluir definitivamente</button>' +
+      '</div>'
+    );
+  };
+
+  window.excluirServidor = async function(userId){
+    var u = getUser(userId);
+    if(!u) return;
+    try{
+      await deleteDoc(doc(fsdb, "users", userId));
+      var cpfDigits = onlyDigits(u.cpf||"");
+      if(cpfDigits) { try{ await deleteDoc(doc(fsdb, "cpfLookup", cpfDigits)); }catch(e){} }
+      closeModal();
+      toast("Servidor excluído.");
+    }catch(err){
+      toast("Erro ao excluir servidor: "+err.message, "err");
+    }
+  };
+
+  window.openModalEditarServidor = function(userId){
+    var u = getUser(userId);
+    var b = u.dadosBancarios || {};
+    var estadoCivis = ["Solteiro(a)","Casado(a)","União estável","Divorciado(a)","Viúvo(a)"];
+    var vinculos = ["Efetivo","Comissionado","Contratado","Temporário"];
+    var tiposConta = ["Conta corrente","Conta poupança","Conta salário"];
+    function opts(list, current){
+      return list.map(function(o){ return '<option'+(o===current?' selected':'')+'>'+o+'</option>'; }).join("");
+    }
+    openModal(
+      '<button class="modal-close" onclick="closeModal()">'+icon("x")+'</button>' +
+      '<h3>Editar dados do servidor</h3><div class="msub">'+esc(u.nome)+' · '+formatCpf(u.cpf)+'</div>' +
+      '<form onsubmit="return submitEditarServidor(event,\''+userId+'\')">' +
+        '<div class="row2">' +
+          '<div class="field"><label>RG (nº e órgão expedidor)</label><input type="text" id="esRg" value="'+esc(u.rg||"")+'" placeholder="0000000 SSP/UF"></div>' +
+          '<div class="field"><label>Estado civil</label><select id="esEstadoCivil">'+opts(estadoCivis, u.estadoCivil)+'</select></div>' +
+        '</div>' +
+        '<div class="row2">' +
+          '<div class="field"><label>Endereço completo</label><input type="text" id="esEndereco" value="'+esc(u.endereco||"")+'"></div>' +
+          '<div class="field"><label>Matrícula funcional</label><input type="text" id="esMatricula" value="'+esc(u.matricula||"")+'" placeholder="00000-0" maxlength="7" inputmode="numeric" oninput="maskMatricula(this)"></div>' +
+        '</div>' +
+        '<div class="field"><label>Telefone / WhatsApp</label><input type="text" id="esTelefone" value="'+esc(formatTelefone(u.telefone||""))+'" placeholder="(00) 00000-0000" maxlength="15" inputmode="numeric" oninput="maskTelefone(this)"></div>' +
+        '<p class="cdoc-section-title" style="margin-top:4px;">Dados funcionais</p>' +
+        '<div class="row2">' +
+          '<div class="field"><label>Cargo</label><input type="text" id="esCargo" value="'+esc(u.cargo||"")+'"></div>' +
+          '<div class="field"><label>Lotação / Setor</label><input type="text" id="esLotacao" value="'+esc(u.lotacao||"")+'"></div>' +
+        '</div>' +
+        '<div class="field"><label>Vínculo com a Prefeitura</label><select id="esVinculo">'+opts(vinculos, u.vinculo)+'</select></div>' +
+        '<p class="cdoc-section-title" style="margin-top:4px;">Dados bancários (para resgate)</p>' +
+        '<div class="row2">' +
+          '<div class="field"><label>Banco</label><input type="text" id="esBanco" value="'+esc(b.banco||"")+'"></div>' +
+          '<div class="field"><label>Agência</label><input type="text" id="esAgencia" value="'+esc(b.agencia||"")+'" maxlength="6" inputmode="numeric" oninput="this.value=onlyDigits(this.value).slice(0,6)"></div>' +
+        '</div>' +
+        '<div class="row2">' +
+          '<div class="field"><label>Conta</label><input type="text" id="esConta" value="'+esc(b.conta||"")+'"></div>' +
+          '<div class="field"><label>Tipo de conta</label><select id="esTipoConta">'+opts(tiposConta, b.tipoConta)+'</select></div>' +
+        '</div>' +
+        '<div class="field"><label>Chave PIX (opcional)</label><input type="text" id="esPix" value="'+esc(b.pix||"")+'"></div>' +
+        '<div class="modal-actions"><button type="button" class="btn-ghost" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-sm">Salvar dados</button></div>' +
+      '</form>'
+    );
+  };
+
+  window.submitEditarServidor = async function(ev, userId){
+    ev.preventDefault();
+    try{
+      await updateDoc(doc(fsdb, "users", userId), {
+        rg: document.getElementById("esRg").value.trim() || "Não informado",
+        estadoCivil: document.getElementById("esEstadoCivil").value,
+        endereco: document.getElementById("esEndereco").value.trim() || "Não informado",
+        telefone: onlyDigits(document.getElementById("esTelefone").value),
+        matricula: document.getElementById("esMatricula").value.trim() || "Não informado",
+        cargo: document.getElementById("esCargo").value.trim() || "Não informado",
+        lotacao: document.getElementById("esLotacao").value.trim() || "Não informado",
+        vinculo: document.getElementById("esVinculo").value,
+        dadosBancarios: {
+          banco: document.getElementById("esBanco").value.trim() || "Não informado",
+          agencia: document.getElementById("esAgencia").value.trim() || "Não informado",
+          conta: document.getElementById("esConta").value.trim() || "Não informado",
+          tipoConta: document.getElementById("esTipoConta").value,
+          pix: document.getElementById("esPix").value.trim() || ""
+        }
+      });
+      closeModal();
+      toast("Dados do servidor atualizados.");
+    }catch(err){
+      toast("Erro ao salvar dados: "+err.message, "err");
+    }
+    return false;
+  };
+
+  window.openModalNovoServidor = function(){
+    openModal(
+      '<button class="modal-close" onclick="closeModal()">'+icon("x")+'</button>' +
+      '<h3>Novo servidor</h3><div class="msub">Dados completos para fins de qualificação contratual</div>' +
+      '<form onsubmit="return submitNovoServidor(event)">' +
+        '<div class="field"><label>Nome completo</label><input type="text" id="svNome" required></div>' +
+        '<div class="row2">' +
+          '<div class="field"><label>CPF</label><input type="text" id="svCpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric" oninput="maskCpf(this)" required></div>' +
+          '<div class="field"><label>RG (nº e órgão expedidor)</label><input type="text" id="svRg" placeholder="0000000 SSP/UF"></div>' +
+        '</div>' +
+        '<div class="row2">' +
+          '<div class="field"><label>Estado civil</label><select id="svEstadoCivil">' +
+            '<option>Solteiro(a)</option><option>Casado(a)</option><option>União estável</option><option>Divorciado(a)</option><option>Viúvo(a)</option>' +
+          '</select></div>' +
+          '<div class="field"><label>Matrícula funcional</label><input type="text" id="svMatricula" placeholder="00000-0" maxlength="7" inputmode="numeric" oninput="maskMatricula(this)"></div>' +
+        '</div>' +
+        '<div class="row2">' +
+          '<div class="field"><label>Endereço completo</label><input type="text" id="svEndereco" placeholder="Rua, número, bairro, cidade/UF"></div>' +
+          '<div class="field"><label>Telefone / WhatsApp</label><input type="text" id="svTelefone" placeholder="(00) 00000-0000" maxlength="15" inputmode="numeric" oninput="maskTelefone(this)"></div>' +
+        '</div>' +
+        '<p class="cdoc-section-title" style="margin-top:4px;">Dados funcionais</p>' +
+        '<div class="row2">' +
+          '<div class="field"><label>Cargo</label><input type="text" id="svCargo" placeholder="Ex.: Professor(a)"></div>' +
+          '<div class="field"><label>Lotação / Setor</label><input type="text" id="svLotacao" placeholder="Ex.: Secretaria de Educação"></div>' +
+        '</div>' +
+        '<div class="field"><label>Vínculo com a Prefeitura</label><select id="svVinculo">' +
+          '<option>Efetivo</option><option>Comissionado</option><option>Contratado</option><option>Temporário</option>' +
+        '</select></div>' +
+        '<p class="cdoc-section-title" style="margin-top:4px;">Dados bancários (para resgate)</p>' +
+        '<div class="row2">' +
+          '<div class="field"><label>Banco</label><input type="text" id="svBanco" placeholder="Ex.: Banco do Brasil"></div>' +
+          '<div class="field"><label>Agência</label><input type="text" id="svAgencia" placeholder="0000" maxlength="6" inputmode="numeric" oninput="this.value=onlyDigits(this.value).slice(0,6)"></div>' +
+        '</div>' +
+        '<div class="row2">' +
+          '<div class="field"><label>Conta</label><input type="text" id="svConta" placeholder="00000-0"></div>' +
+          '<div class="field"><label>Tipo de conta</label><select id="svTipoConta"><option>Conta corrente</option><option>Conta poupança</option><option>Conta salário</option></select></div>' +
+        '</div>' +
+        '<div class="field"><label>Chave PIX (opcional)</label><input type="text" id="svPix" placeholder="CPF, e-mail, telefone ou chave aleatória"></div>' +
+        '<p class="cdoc-section-title" style="margin-top:4px;">Acesso ao sistema</p>' +
+        '<div class="row2">' +
+          '<div class="field"><label>E-mail</label><input type="email" id="svEmail" required></div>' +
+          '<div class="field"><label>Senha provisória</label><input type="text" id="svSenha" value="123456" required></div>' +
+        '</div>' +
+        '<div class="modal-actions"><button type="button" class="btn-ghost" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-sm">Cadastrar</button></div>' +
+      '</form>'
+    );
+  };
+
+  window.submitNovoServidor = async function(ev){
+    ev.preventDefault();
+    var nome = document.getElementById("svNome").value.trim();
+    var cpf = onlyDigits(document.getElementById("svCpf").value);
+    var email = document.getElementById("svEmail").value.trim();
+    var senha = document.getElementById("svSenha").value.trim();
+    if(!nome || cpf.length !== 11 || !email || !senha){ toast("Preencha todos os campos corretamente.", "err"); return false; }
+    if(senha.length < 6){ toast("A senha provisória precisa ter pelo menos 6 caracteres.", "err"); return false; }
+    if(db.users.some(function(u){ return (u.email||"").toLowerCase()===email.toLowerCase() || onlyDigits(u.cpf||"")===cpf; })){
+      toast("Já existe um servidor com este e-mail ou CPF.", "err"); return false;
+    }
+
+    var submitButton = ev.target.querySelector("button[type=submit]");
+    if(submitButton) submitButton.disabled = true;
+
+    // Cria a conta de autenticação num app Firebase secundário, para não
+    // derrubar a sessão do admin que está logado (efeito colateral do SDK).
+    var secondaryApp = null;
+    try{
+      secondaryApp = initializeApp(firebaseConfig, "Secondary_" + Date.now());
+      var secondaryAuth = getAuth(secondaryApp);
+      var cred = await createUserWithEmailAndPassword(secondaryAuth, email, senha);
+      var newUid = cred.user.uid;
+      await signOut(secondaryAuth);
+
+      var userData = {
+        nome:nome, email:email, cpf:cpf, role:"cliente", status:"pendente",
+        rg: document.getElementById("svRg").value.trim() || "Não informado",
+        estadoCivil: document.getElementById("svEstadoCivil").value,
+        nacionalidade: "Brasileiro(a)",
+        endereco: document.getElementById("svEndereco").value.trim() || "Não informado",
+        telefone: onlyDigits(document.getElementById("svTelefone").value),
+        matricula: document.getElementById("svMatricula").value.trim() || "Não informado",
+        cargo: document.getElementById("svCargo").value.trim() || "Não informado",
+        lotacao: document.getElementById("svLotacao").value.trim() || "Não informado",
+        vinculo: document.getElementById("svVinculo").value,
+        dadosBancarios: {
+          banco: document.getElementById("svBanco").value.trim() || "Não informado",
+          agencia: document.getElementById("svAgencia").value.trim() || "Não informado",
+          conta: document.getElementById("svConta").value.trim() || "Não informado",
+          tipoConta: document.getElementById("svTipoConta").value,
+          pix: document.getElementById("svPix").value.trim() || ""
+        },
+        veracidadeDeclarada: true, dataDeclaracaoVeracidade: todayISO(),
+        convenioId:null, aporteMensal:0, indiceRendimento:0, carenciaDias:0, prazoMeses:0,
+        codigoAdesao:null, dataInicioDesconto:null, dataFimDesconto:null,
+        dataAdesao:null, saldo:0, contrato:null, extrato:[], resgates:[]
+      };
+      await setDoc(doc(fsdb, "users", newUid), userData);
+      await setDoc(doc(fsdb, "cpfLookup", cpf), { email: email });
+
+      closeModal();
+      toast("Servidor cadastrado. Adesão aguardando análise.");
+      servidoresTab = "pendente";
+    }catch(err){
+      var msg = err.code === "auth/email-already-in-use" ? "Este e-mail já está cadastrado no sistema de login." : ("Erro ao cadastrar servidor: " + err.message);
+      toast(msg, "err");
+      if(submitButton) submitButton.disabled = false;
+    }finally{
+      if(secondaryApp){ try{ await deleteApp(secondaryApp); }catch(e){} }
+    }
+    return false;
+  };
+
+  window.openModalAnalisar = function(userId){
+    var u = getUser(userId);
+    var convOptions = db.convenios.filter(function(c){return c.status==="ativo";}).map(function(c){
+      return '<option value="'+c.id+'">'+esc(c.nome)+'</option>';
+    }).join("");
+    if(!convOptions) convOptions = '<option value="">Nenhum convênio ativo — cadastre um primeiro</option>';
+    openModal(
+      '<button class="modal-close" onclick="closeModal()">'+icon("x")+'</button>' +
+      '<h3>Analisar adesão</h3><div class="msub">'+esc(u.nome)+' · '+formatCpf(u.cpf)+'</div>' +
+      '<form onsubmit="return submitAnalisar(event,\''+userId+'\')">' +
+        '<div class="field"><label>Convênio</label><select id="anConvenio" required>'+convOptions+'</select></div>' +
+        '<div class="row2">' +
+          '<div class="field"><label>Aporte mensal (R$)</label><input type="number" step="0.01" min="1" id="anAporte" placeholder="150,00" required></div>' +
+          '<div class="field"><label>Rendimento (% a.m.)</label><input type="number" step="0.01" min="0" id="anIndice" placeholder="0,60" required></div>' +
+        '</div>' +
+        '<div class="row2">' +
+          '<div class="field"><label>Carência para resgate (dias)</label><input type="number" min="0" id="anCarencia" placeholder="90" required></div>' +
+          '<div class="field"><label>Prazo dos descontos (meses, 0 = indeterminado)</label><input type="number" min="0" id="anPrazo" placeholder="24" required></div>' +
+        '</div>' +
+        '<div class="field"><label>Data de início do desconto em folha</label><input type="text" id="anInicioDesconto" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" oninput="maskData(this)" value="'+isoDateToBr(proximaCompetenciaISO())+'" required></div>' +
+        '<div class="modal-note">Ao aprovar, o sistema gera o contrato e a documentação de adesão com estes termos. O servidor(a) só passa a status <strong>Ativo</strong> depois de assinar eletronicamente.</div>' +
+        '<div class="modal-actions">' +
+          '<button type="button" class="btn-ghost btn-danger-ghost" onclick="recusarAdesao(\''+userId+'\')">Recusar</button>' +
+          '<button type="submit" class="btn-sm">'+icon("check")+' Aprovar e gerar contrato</button>' +
+        '</div>' +
+      '</form>'
+    );
+  };
+
+  window.submitAnalisar = async function(ev, userId){
+    ev.preventDefault();
+    var convenioId = document.getElementById("anConvenio").value;
+    var aporte = parseFloat(document.getElementById("anAporte").value);
+    var indicePct = parseFloat(document.getElementById("anIndice").value);
+    var carencia = parseInt(document.getElementById("anCarencia").value, 10);
+    var prazo = parseInt(document.getElementById("anPrazo").value, 10);
+    var inicioDescontoIso = brDateToIso(document.getElementById("anInicioDesconto").value.trim());
+    if(!convenioId || !aporte || aporte<=0 || isNaN(indicePct) || isNaN(carencia) || isNaN(prazo) || !inicioDescontoIso){
+      toast("Preencha todos os campos corretamente.", "err"); return false;
+    }
+    var fimDescontoIso = prazo > 0 ? addMesesISO(inicioDescontoIso, prazo) : null;
+    try{
+      await updateDoc(doc(fsdb, "users", userId), {
+        status: "aguardando_assinatura",
+        convenioId: convenioId,
+        aporteMensal: aporte,
+        indiceRendimento: indicePct/100,
+        carenciaDias: carencia,
+        prazoMeses: prazo,
+        saldo: 0,
+        dataInicioDesconto: inicioDescontoIso,
+        dataFimDesconto: fimDescontoIso,
+        codigoAdesao: "AD-" + new Date().getFullYear() + "-" + uid("").slice(-5).toUpperCase(),
+        contrato: { numero: "MLC-" + new Date().getFullYear() + "-" + uid("").slice(-4).toUpperCase(), geradoEm: todayISO(), assinadoEm: null, assinaturaNome: null }
+      });
+      closeModal();
+      toast("Contrato gerado. Aguardando assinatura do servidor.");
+      servidoresTab = "aguardando_assinatura";
+    }catch(err){
+      toast("Erro ao aprovar adesão: "+err.message, "err");
+    }
+    return false;
+  };
+
+  window.recusarAdesao = async function(userId){
+    try{
+      await updateDoc(doc(fsdb, "users", userId), { status: "recusado" });
+      closeModal();
+      toast("Adesão recusada.");
+      servidoresTab = "recusado";
+    }catch(err){
+      toast("Erro ao recusar adesão: "+err.message, "err");
+    }
+  };
+
+  window.lancarAporte = async function(userId){
+    var u = getUser(userId);
+    var rendimento = +(u.saldo * u.indiceRendimento).toFixed(2);
+    var data = todayISO();
+    var novoSaldo = +(u.saldo + u.aporteMensal + rendimento).toFixed(2);
+    var novasEntradas = [{ data:data, tipo:"Aporte", valor:u.aporteMensal, saldoApos:novoSaldo }];
+    if(rendimento > 0){
+      novasEntradas.push({ data:data, tipo:"Rendimento", valor:rendimento, saldoApos:novoSaldo });
+    }
+    try{
+      await updateDoc(doc(fsdb, "users", userId), {
+        saldo: novoSaldo,
+        extrato: arrayUnion.apply(null, novasEntradas)
+      });
+      toast("Aporte de "+fmtMoney(u.aporteMensal)+" lançado para "+u.nome.split(" ")[0]+".");
+      var linhasAporte = ["Aporte mensal: " + fmtMoney(u.aporteMensal)];
+      if(rendimento > 0) linhasAporte.push("Rendimento: " + fmtMoney(rendimento));
+      linhasAporte.push("Saldo atual: " + fmtMoney(novoSaldo));
+      abrirModalRecibo(userId, "Aporte lançado", linhasAporte);
+    }catch(err){
+      toast("Erro ao lançar aporte: "+err.message, "err");
+    }
+  };
+
+  window.openModalNovoLancamento = function(userId){
+    var u = getUser(userId);
+    openModal(
+      '<button class="modal-close" onclick="closeModal()">'+icon("x")+'</button>' +
+      '<h3>Novo lançamento</h3><div class="msub">'+esc(u.nome)+' · Saldo atual: '+fmtMoney(u.saldo)+'</div>' +
+      '<form onsubmit="return submitNovoLancamento(event,\''+userId+'\')">' +
+        '<div class="row2">' +
+          '<div class="field"><label>Tipo</label><select id="nlTipo">' +
+            '<option value="Transferência">Transferência</option>' +
+            '<option value="Ajuste">Ajuste</option>' +
+            '<option value="Aporte">Aporte</option>' +
+            '<option value="Rendimento">Rendimento</option>' +
+            '<option value="Resgate">Resgate</option>' +
+          '</select></div>' +
+          '<div class="field"><label>Direção</label><select id="nlSinal"><option value="1">Entrada (credita saldo)</option><option value="-1">Saída (debita saldo)</option></select></div>' +
+        '</div>' +
+        '<div class="field"><label>Valor (R$)</label><input type="number" step="0.01" min="0.01" id="nlValor" placeholder="0,00" required></div>' +
+        '<div class="field"><label>Observação (opcional)</label><input type="text" id="nlObs" placeholder="Ex.: Transferência para outro plano" maxlength="140"></div>' +
+        '<div class="modal-actions"><button type="button" class="btn-ghost" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-sm">'+icon("check")+' Lançar</button></div>' +
+      '</form>'
+    );
+  };
+
+  window.submitNovoLancamento = async function(ev, userId){
+    ev.preventDefault();
+    var u = getUser(userId);
+    var tipo = document.getElementById("nlTipo").value;
+    var sinal = parseInt(document.getElementById("nlSinal").value, 10);
+    var valor = parseFloat(document.getElementById("nlValor").value);
+    var obs = document.getElementById("nlObs").value.trim();
+    if(!valor || valor <= 0){ toast("Informe um valor válido.", "err"); return false; }
+    if(sinal < 0 && valor > u.saldo){ toast("Saldo insuficiente para essa saída.", "err"); return false; }
+    var novoSaldo = +(u.saldo + sinal*valor).toFixed(2);
+    var entrada = { data: todayISO(), tipo: tipo, valor: valor, saldoApos: novoSaldo, direcao: sinal < 0 ? "saida" : "entrada" };
+    if(obs) entrada.obs = obs;
+    try{
+      await updateDoc(doc(fsdb, "users", userId), { saldo: novoSaldo, extrato: arrayUnion(entrada) });
+      closeModal();
+      toast(tipo + " de " + fmtMoney(valor) + " lançado" + (sinal<0?" (saída)":"") + ".");
+      var linhasLanc = [tipo + (sinal < 0 ? " (saída)" : " (entrada)") + ": " + fmtMoney(valor)];
+      if(obs) linhasLanc.push("Observação: " + obs);
+      linhasLanc.push("Saldo atual: " + fmtMoney(novoSaldo));
+      abrirModalRecibo(userId, "Lançamento registrado", linhasLanc);
+    }catch(err){
+      toast("Erro ao lançar: "+err.message, "err");
+    }
+    return false;
+  };
+
+  window.openModalVerExtrato = function(userId){
+    var u = getUser(userId);
+    var entries = u.extrato.slice().reverse();
+    var rows = entries.map(function(e){
+      var cls = extratoBadgeClass(e.tipo);
+      var isOut = extratoIsSaida(e);
+      return '<div class="passbook-row" style="grid-template-columns:80px 1fr auto;">' +
+        '<div class="pdate">'+fmtDate(e.data)+'</div><div><span class="badge '+cls+'">'+e.tipo+'</span></div>' +
+        '<div class="pval '+(isOut?'neg':'pos')+'">'+(isOut?'- ':'+ ')+fmtMoney(e.valor)+'</div></div>';
+    }).join("") || '<div style="padding:20px; text-align:center; color:var(--ink-400);">Sem lançamentos.</div>';
+    openModal(
+      '<button class="modal-close" onclick="closeModal()">'+icon("x")+'</button>' +
+      '<h3>Extrato — '+esc(u.nome)+'</h3><div class="msub">Saldo atual: <strong>'+fmtMoney(u.saldo)+'</strong></div>' +
+      '<div class="passbook" style="max-height:320px; overflow-y:auto;">'+rows+'</div>' +
+      '<div class="modal-actions"><button type="button" class="btn-ghost" style="flex:1;" onclick="closeModal()">Fechar</button>' +
+      '<button type="button" class="btn-sm" style="flex:1;" onclick="closeModal(); openModalNovoLancamento(\''+userId+'\')">'+icon("plus")+' Novo lançamento</button></div>'
+    );
+  };
+
+  function viewAdminResgates(){
+    var all = [];
+    db.users.forEach(function(u){
+      (u.resgates||[]).forEach(function(r){ all.push({ user:u, r:r }); });
+    });
+    all.sort(function(a,b){ if(a.r.status===b.r.status) return b.r.data.localeCompare(a.r.data); return a.r.status==="pendente" ? -1 : 1; });
+
+    var rows = all.map(function(item){
+      var u = item.user, r = item.r;
+      var statusBadge = r.status === "pendente" ? '<span class="badge b-pendente">Pendente</span>' :
+        (r.status === "pago" ? '<span class="badge b-pago">Pago</span>' : '<span class="badge b-recusada">Recusado</span>');
+      var actions = r.status === "pendente" ?
+        '<button class="btn-ghost" onclick="aprovarResgate(\''+u.id+'\',\''+r.id+'\')">'+icon("check")+' Aprovar</button> ' +
+        '<button class="btn-ghost btn-danger-ghost" onclick="recusarResgate(\''+u.id+'\',\''+r.id+'\')">'+icon("x")+' Recusar</button>' : "—";
+      return '<tr><td><strong>'+esc(u.nome)+'</strong></td><td>'+esc(convenioNome(u.convenioId))+'</td>' +
+        '<td class="mono">'+fmtMoney(r.valor)+'</td><td class="mono" style="color:var(--ink-400)">'+fmtDate(r.data)+'</td>' +
+        '<td>'+statusBadge+'</td><td style="text-align:right; white-space:nowrap;">'+actions+'</td></tr>';
+    }).join("") || '<tr class="empty-row"><td colspan="6">Nenhuma solicitação de resgate.</td></tr>';
+
+    return '<div class="content-header"><div><h1>Resgates</h1><p>Solicitações de resgate dos servidores</p></div></div>' +
+      '<div class="glass-card"><table class="data-table"><thead><tr><th>Servidor</th><th>Convênio</th><th>Valor</th><th>Data</th><th>Status</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  }
+
+  function viewAdminEmpresa(){
+    var e = db.empresa || {};
+    var incomplete = !e.razaoSocial || !e.cnpj || (e.cnpj||"").indexOf("00.000.000") === 0 || (e.representante||"").indexOf("Preencher") === 0 || !e.representante;
+    return '<div class="content-header"><div><h1>Dados da Empresa</h1><p>Qualificação da ML Consórcio para os contratos gerados</p></div>' +
+      '<button class="btn-sm" onclick="openModalEditarEmpresa()">'+icon("gear")+' Editar dados</button></div>' +
+      (incomplete ? '<div class="glass-card" style="border-color:rgba(239,106,106,.35);"><div class="empty-state">'+icon("empty")+'<h4>Dados incompletos</h4><p>Preencha a razão social, CNPJ, endereço e representante legal antes de gerar contratos — esses dados aparecem na qualificação do instrumento.</p></div></div>' : '') +
+      '<div class="glass-card"><div class="info-grid">' +
+        '<div class="info-item"><div class="il">Razão social</div><div class="iv">'+esc(e.razaoSocial||"—")+'</div></div>' +
+        '<div class="info-item"><div class="il">CNPJ</div><div class="iv mono">'+esc(e.cnpj||"—")+'</div></div>' +
+        '<div class="info-item"><div class="il">Endereço da sede</div><div class="iv">'+esc(e.endereco||"—")+'</div></div>' +
+        '<div class="info-item"><div class="il">Representante legal</div><div class="iv">'+esc(e.representante||"—")+'</div></div>' +
+        '<div class="info-item"><div class="il">CPF do representante</div><div class="iv mono">'+esc(e.cpfRepresentante||"—")+'</div></div>' +
+        '<div class="info-item"><div class="il">Cargo</div><div class="iv">'+esc(e.cargoRepresentante||"—")+'</div></div>' +
+        '<div class="info-item"><div class="il">WhatsApp de atendimento</div><div class="iv mono">'+esc(formatTelefone(e.whatsappAdmin)||"—")+'</div></div>' +
+      '</div></div>';
+  }
+
+  window.openModalEditarEmpresa = function(){
+    var e = db.empresa || {};
+    openModal(
+      '<button class="modal-close" onclick="closeModal()">'+icon("x")+'</button>' +
+      '<h3>Dados da empresa</h3><div class="msub">Usados na qualificação (CONTRATADA) dos contratos gerados</div>' +
+      '<form onsubmit="return submitEditarEmpresa(event)">' +
+        '<div class="field"><label>Razão social</label><input type="text" id="emRazao" value="'+esc(e.razaoSocial)+'" required></div>' +
+        '<div class="row2">' +
+          '<div class="field"><label>CNPJ</label><input type="text" id="emCnpj" value="'+esc(e.cnpj)+'" maxlength="18" inputmode="numeric" oninput="maskCnpj(this)" required></div>' +
+          '<div class="field"><label>Endereço da sede</label><input type="text" id="emEndereco" value="'+esc(e.endereco)+'" required></div>' +
+        '</div>' +
+        '<div class="row2">' +
+          '<div class="field"><label>Representante legal</label><input type="text" id="emRepresentante" value="'+esc(e.representante)+'" required></div>' +
+          '<div class="field"><label>CPF do representante</label><input type="text" id="emCpfRep" value="'+esc(e.cpfRepresentante)+'" maxlength="14" inputmode="numeric" oninput="maskCpf(this)" required></div>' +
+        '</div>' +
+        '<div class="field"><label>Cargo do representante</label><input type="text" id="emCargo" value="'+esc(e.cargoRepresentante)+'"></div>' +
+        '<div class="field"><label>WhatsApp de atendimento (recebe as mensagens dos clientes)</label><input type="text" id="emWhats" value="'+esc(formatTelefone(e.whatsappAdmin))+'" placeholder="(00) 00000-0000" maxlength="15" inputmode="numeric" oninput="maskTelefone(this)"></div>' +
+        '<div class="modal-actions"><button type="button" class="btn-ghost" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-sm">Salvar</button></div>' +
+      '</form>'
+    );
+  };
+
+  window.submitEditarEmpresa = async function(ev){
+    ev.preventDefault();
+    try{
+      await setDoc(doc(fsdb, "empresa", "config"), {
+        razaoSocial: document.getElementById("emRazao").value.trim(),
+        cnpj: document.getElementById("emCnpj").value.trim(),
+        endereco: document.getElementById("emEndereco").value.trim(),
+        representante: document.getElementById("emRepresentante").value.trim(),
+        cpfRepresentante: document.getElementById("emCpfRep").value.trim(),
+        cargoRepresentante: document.getElementById("emCargo").value.trim(),
+        whatsappAdmin: onlyDigits(document.getElementById("emWhats").value)
+      });
+      closeModal();
+      toast("Dados da empresa atualizados.");
+    }catch(err){
+      toast("Erro ao salvar dados da empresa: "+err.message, "err");
+    }
+    return false;
+  };
+
+  window.aprovarResgate = async function(userId, resgateId){
+    var u = getUser(userId);
+    var r = (u.resgates||[]).find(function(x){return x.id===resgateId;});
+    if(!r) return;
+    if(r.valor > u.saldo){ toast("Saldo insuficiente para este resgate.", "err"); return; }
+    var novoSaldo = +(u.saldo - r.valor).toFixed(2);
+    var novosResgates = u.resgates.map(function(x){
+      return x.id === resgateId ? Object.assign({}, x, { status:"pago", dataPagamento: todayISO() }) : x;
+    });
+    try{
+      await updateDoc(doc(fsdb, "users", userId), {
+        saldo: novoSaldo,
+        resgates: novosResgates,
+        extrato: arrayUnion({ data:todayISO(), tipo:"Resgate", valor:r.valor, saldoApos:novoSaldo })
+      });
+      toast("Resgate de "+fmtMoney(r.valor)+" aprovado e pago.");
+      abrirModalRecibo(userId, "Resgate aprovado e pago", [
+        "Valor resgatado: " + fmtMoney(r.valor),
+        "Saldo atual: " + fmtMoney(novoSaldo)
+      ]);
+    }catch(err){
+      toast("Erro ao aprovar resgate: "+err.message, "err");
+    }
+  };
+
+  window.recusarResgate = async function(userId, resgateId){
+    var u = getUser(userId);
+    var r = (u.resgates||[]).find(function(x){return x.id===resgateId;});
+    if(!r) return;
+    var novosResgates = u.resgates.map(function(x){
+      return x.id === resgateId ? Object.assign({}, x, { status:"recusado" }) : x;
+    });
+    try{
+      await updateDoc(doc(fsdb, "users", userId), { resgates: novosResgates });
+      toast("Solicitação de resgate recusada.");
+      abrirModalRecibo(userId, "Solicitação de resgate recusada", [
+        "Valor solicitado: " + fmtMoney(r.valor)
+      ]);
+    }catch(err){
+      toast("Erro ao recusar resgate: "+err.message, "err");
+    }
+  };
+
+  // ---------- Enter app / logout / session ----------
+  var unsubscribers = [];
+  function detachListeners(){
+    unsubscribers.forEach(function(fn){ try{ fn(); }catch(e){} });
+    unsubscribers = [];
+  }
+
+  function enterApp(profile){
+    currentUser = profile;
+    document.getElementById("login-screen").style.display = "none";
+    document.getElementById("app-shell").style.display = "block";
+
+    var initials = profile.nome.split(" ").filter(Boolean).slice(0,2).map(function(w){return w[0];}).join("").toUpperCase();
+    document.getElementById("avatarInitials").textContent = initials;
+    document.getElementById("whoName").textContent = profile.nome;
+    var roleLabels = { ativo:"Conta ativa", pendente:"Adesão pendente", aguardando_assinatura:"Contrato p/ assinar", recusado:"Adesão recusada" };
+    document.getElementById("whoRole").textContent = profile.role === "admin" ? "Administrador" : ("Cliente · " + (roleLabels[profile.status] || "—"));
+
+    currentView = profile.role === "admin" ? "overview" : "home";
+
+    detachListeners();
+
+    // Convênios e dados da empresa: visíveis para admin e cliente, em tempo real.
+    unsubscribers.push(onSnapshot(collection(fsdb, "convenios"), function(snap){
+      db.convenios = snap.docs.map(function(d){ return Object.assign({ id:d.id }, d.data()); });
+      renderSidebar(); renderContent();
+    }, function(err){ console.error("convenios listener:", err); }));
+
+    unsubscribers.push(onSnapshot(doc(fsdb, "empresa", "config"), function(snap){
+      db.empresa = snap.exists() ? snap.data() : seedEmpresaFallback();
+      if(currentUser && currentUser.role === "admin") renderContent();
+      updateWaFab();
+    }, function(err){ console.error("empresa listener:", err); }));
+
+    if(profile.role === "admin"){
+      unsubscribers.push(onSnapshot(collection(fsdb, "users"), function(snap){
+        db.users = snap.docs.map(function(d){ return Object.assign({ id:d.id }, d.data()); });
+        renderSidebar(); renderContent();
+      }, function(err){ console.error("users listener:", err); toast("Erro ao sincronizar servidores: "+err.message, "err"); }));
+    } else {
+      unsubscribers.push(onSnapshot(doc(fsdb, "users", profile.id), function(snap){
+        if(snap.exists()){
+          currentUser = Object.assign({ id:profile.id }, snap.data());
+          db.users = [currentUser];
+          var lbl = { ativo:"Conta ativa", pendente:"Adesão pendente", aguardando_assinatura:"Contrato p/ assinar", recusado:"Adesão recusada" };
+          document.getElementById("whoRole").textContent = "Cliente · " + (lbl[currentUser.status] || "—");
+          renderSidebar(); renderContent();
+        }
+      }, function(err){ console.error("user listener:", err); toast("Erro ao sincronizar seus dados: "+err.message, "err"); }));
+    }
+
+    renderSidebar();
+    renderContent();
+    updateWaFab();
+  }
+
+  document.getElementById("hamburgerBtn").addEventListener("click", function(){
+    document.getElementById("sidebar").classList.toggle("open");
+    document.getElementById("sidebarBackdrop").classList.toggle("show");
+  });
+  document.getElementById("sidebarBackdrop").addEventListener("click", function(){
+    document.getElementById("sidebar").classList.remove("open");
+    this.classList.remove("show");
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", function(){
+    signOut(auth).catch(function(err){ console.error(err); });
+  });
+
+  // ---------- Firebase Auth: fonte única de verdade sobre quem está logado ----------
+  var lastLoadedUid = null;
+  onAuthStateChanged(auth, async function(fbUser){
+    if(fbUser){
+      if(lastLoadedUid === fbUser.uid && currentUser) return; // já carregado
+      try{
+        var snap = await getDoc(doc(fsdb, "users", fbUser.uid));
+        submitBtn.classList.remove("loading");
+        submitBtn.disabled = false;
+        if(!snap.exists()){
+          showError("Sua conta de login existe, mas o perfil não foi encontrado no banco de dados. Fale com o administrador.");
+          await signOut(auth);
+          return;
+        }
+        lastLoadedUid = fbUser.uid;
+        var profile = Object.assign({ id: fbUser.uid }, snap.data());
+        enterApp(profile);
+      }catch(err){
+        submitBtn.classList.remove("loading");
+        submitBtn.disabled = false;
+        showError("Erro ao carregar seu perfil: " + err.message);
+      }
+    } else {
+      lastLoadedUid = null;
+      detachListeners();
+      currentUser = null;
+      document.getElementById("app-shell").style.display = "none";
+      document.getElementById("login-screen").style.display = "block";
+      form.reset();
+      updateWaFab();
+    }
+  });
+
+  // ---------- Subtle parallax on blobs (mouse) ----------
+  if(!reduceMotion && window.matchMedia("(pointer:fine)").matches){
+    var blobs = document.querySelectorAll(".blob");
+    window.addEventListener("mousemove", function(e){
+      var x = (e.clientX / window.innerWidth - 0.5);
+      var y = (e.clientY / window.innerHeight - 0.5);
+      blobs.forEach(function(b, i){
+        var depth = (i+1) * 8;
+        b.style.marginLeft = (x * depth) + "px";
+        b.style.marginTop = (y * depth) + "px";
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>
